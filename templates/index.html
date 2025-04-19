@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BLOCKS</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles/style.css') }}">
+</head>
+<body class="container py-5">
+  <!-- Header with Logo and Facebook Button -->
+  <div class="header">
+    <div class="logo-container">
+      <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Logo" style="height: 130px; margin-right: 15px;">
+    </div>
+    <script>
+      function filterProducts() {
+      const categorySelect = document.getElementById('categorySelect').value;
+      const priceSelect = document.getElementById('priceSelect').value;
+      const searchInput = document.getElementById('searchInput').value.toLowerCase();
+      const products = document.querySelectorAll('.product-card');
+    
+      const productsArray = Array.from(products);
+
+      if (priceSelect === 'low-to-high') {
+        productsArray.sort((a, b) => parseFloat(a.getAttribute('data-price')) - parseFloat(b.getAttribute('data-price')));
+      } else if (priceSelect === 'high-to-low') {
+        productsArray.sort((a, b) => parseFloat(b.getAttribute('data-price')) - parseFloat(a.getAttribute('data-price')));
+      } else if (priceSelect === 'none') {
+        productsArray.sort((a, b) => parseInt(a.getAttribute('data-stock')) - parseInt(b.getAttribute('data-stock'))); // Default sorting logic
+      }
+
+      const productsGrid = document.getElementById('productsGrid');
+      productsGrid.innerHTML = ''; // Clear the grid
+      productsArray.forEach(product => {
+        const productCategory = product.getAttribute('data-category');
+        const productName = product.querySelector('.product-name').innerText.toLowerCase();
+        const productPrice = parseFloat(product.getAttribute('data-price'));
+
+        let categoryMatch = categorySelect === 'all' || productCategory === categorySelect;
+        let searchMatch = productName.includes(searchInput);
+
+        if (categoryMatch && searchMatch) {
+        product.style.display = ''; // Ensure visible products are displayed
+        } else {
+        product.style.display = 'none'; // Hide non-matching products
+        }
+        productsGrid.appendChild(product); // Re-append all products to maintain order
+      });
+      }
+    </script>
+
+
+    <div class="social-buttons">
+      <button class="fb-button" onclick="window.open('https://www.facebook.com/profile.php?id=61557694115403', '_blank')">
+      Facebook
+      </button>
+      <button class="ig-button" onclick="window.open('https://www.instagram.com/blocks_snap_that/', '_blank')">
+      Instagram
+      </button>
+      <button class="wa-button" onclick="window.open('https://wa.me/01533649394', '_blank')">
+      WhatsApp
+      </button>
+      <a 
+        href="{{ url_for('invoice') }}" 
+        class="create-order-button modern-button" 
+        style="padding: 10px 20px; font-size: 16px;">
+        Create Order
+      </a>
+    </div>
+  </div>
+
+  <!-- Category and Price Filter -->
+  <div class="filter-container d-flex justify-content-between align-items-center" style="gap: 10px;">
+    <select id="categorySelect" class="form-select modern-button" style="width: auto;" onchange="filterProducts()">
+      <option value="all">All Categories</option>
+      <option value="Marvel">Marvel</option>
+      <option value="DC">DC</option>
+      <option value="One Piece">One Piece</option>
+      <option value="Naruto">Naruto</option>
+      <option value="JJK">JJK</option>
+      <option value="Demon Slayer">Demon Slayer</option>
+    </select>
+
+    <select id="priceSelect" class="form-select modern-button" style="width: auto;" onchange="filterProducts()">
+      <option value="none">None</option>
+      <option value="low-to-high">Low to High</option>
+      <option value="high-to-low">High to Low</option>
+    </select>
+
+    <input 
+    type="text" 
+    id="searchInput" 
+    class="form-control modern-button" 
+    placeholder="Search products..." 
+    oninput="filterProducts()" 
+    style="width: auto;"
+    >
+
+  </div>
+
+  <!-- Products Grid -->
+  <div class="products-grid" id="productsGrid">
+    {% for product in products %}
+    {% if product['Stock'] > 0 %}
+    <div class="product-card" data-category="{{ product['Category'] }}" data-stock="{{ product['Stock'] }}" data-price="{{ product['Price'] }}" onclick="showPopup(this)">
+      {% if product['Image'] %}
+      <img src="{{ url_for('static', filename='images/' + product['Image']) }}" class="product-image" alt="{{ product['Product'] }}">
+      {% else %}
+      <img src="{{ url_for('static', filename='images/placeholder.jpg') }}" class="product-image" alt="Placeholder">
+      {% endif %}
+      <div class="stock-badge in-stock">In Stock</div>
+      <div class="product-info">
+        <h3 class="product-name">{{ product['Product'] }}</h3>
+        <p class="product-category">{{ product['Category'] }}</p>
+        <p class="product-price">৳{{ product['Price'] }}</p>
+      </div>
+    </div>
+    {% endif %}
+    {% endfor %}
+  </div>
+
+  <!-- Popup Modal -->
+  <div id="productPopup" class="popup" onclick="closePopup()">
+    <div class="popup-content" onclick="event.stopPropagation()">
+      <img id="popupImage" src="" alt="Product Image" class="popup-image" style="max-width: 100%; height: auto; margin-bottom: 15px;">
+      <h3 id="popupName" class="popup-name" style="margin-bottom: 10px;"></h3>
+      <p id="popupCategory" class="popup-category" style="margin-bottom: 10px;"></p>
+      <p id="popupPrice" class="popup-price" style="margin-bottom: 10px; font-size: larger; font-weight: bold;"></p>
+    </div>
+  </div>
+
+  <script>
+    function showPopup(productCard) {
+      const popup = document.getElementById('productPopup');
+      const popupImage = document.getElementById('popupImage');
+      const popupName = document.getElementById('popupName');
+      const popupCategory = document.getElementById('popupCategory');
+      const popupPrice = document.getElementById('popupPrice');
+
+      const imageSrc = productCard.querySelector('.product-image')?.src || '';
+      const name = productCard.querySelector('.product-name')?.innerText || 'Unknown Product';
+      const category = productCard.querySelector('.product-category')?.innerText || 'Unknown Category';
+      const price = productCard.querySelector('.product-price')?.innerText || 'Unknown Price';
+
+      if (popupImage) popupImage.src = imageSrc;
+      if (popupName) popupName.innerText = name;
+      if (popupCategory) popupCategory.innerText = category;
+      if (popupPrice) popupPrice.innerText = price;
+
+      popup.style.display = 'block';
+    }
+
+    function closePopup() {
+      const popup = document.getElementById('productPopup');
+      popup.style.display = 'none';
+    }
+  </script>
+</body>
+</html>

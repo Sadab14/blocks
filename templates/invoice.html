@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BLOCKS - Create Invoice</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles/style.css') }}">
+</head>
+<body class="container py-5">
+    <!-- Header with Logo -->
+    <div class="header">
+        <div class="logo-container">
+            <a href="{{ url_for('home') }}">
+                <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Logo" style="height: 130px; margin-right: 15px;">
+            </a>
+        </div>
+        <div class="invoice-header">
+            <h1>Create Order</h1>
+            <button id="viewInvoiceBtn" class="invoice-button" onclick="viewInvoice()">View Invoice</button>
+        </div>
+        
+    </div>
+
+
+    <!-- Category, Price Filter, and Search -->
+    <div class="filter-container d-flex justify-content-between align-items-center" style="gap: 10px;">
+        <select id="categorySelect" class="form-select modern-button" style="width: auto;" onchange="filterProducts()">
+          <option value="all">All Categories</option>
+          <option value="Marvel">Marvel</option>
+          <option value="DC">DC</option>
+          <option value="One Piece">One Piece</option>
+          <option value="Naruto">Naruto</option>
+          <option value="JJK">JJK</option>
+          <option value="Demon Slayer">Demon Slayer</option>
+        </select>
+    
+        <select id="priceSelect" class="form-select modern-button" style="width: auto;" onchange="filterProducts()">
+          <option value="none">None</option>
+          <option value="low-to-high">Low to High</option>
+          <option value="high-to-low">High to Low</option>
+        </select>
+
+        <input id="searchInput" type="text" class="form-control modern-button" placeholder="Search products..." oninput="filterProducts()" style="width: auto;">
+    </div>
+    
+
+    <!-- Products Grid -->
+    <div id="productsGrid" class="products-grid">
+        {% for product in products %}
+        <div class="product-card invoice-product" 
+             data-category="{{ product['Category'] }}" 
+             data-price="{{ product['Price'] }}"
+             data-stock="{{ product['Stock'] }}"
+             onclick="addToInvoice(this)">
+            {% if product['Image'] %}
+            <img src="{{ url_for('static', filename='images/' + product['Image']) }}" class="product-image" alt="{{ product['Product'] }}">
+            {% else %}
+            <img src="{{ url_for('static', filename='images/placeholder.jpg') }}" class="product-image" alt="Placeholder">
+            {% endif %}
+            <div class="stock-badge in-stock">Stock: {{ product['Stock'] }}</div>
+            <div class="product-info">
+                <h3 class="product-name">{{ product['Product'] }}</h3>
+                <p class="product-category">{{ product['Category'] }}</p>
+                <p class="product-price">৳{{ product['Price'] }}</p>
+            </div>
+            <div class="quantity-controls" style="display: none;">
+                <button class="quantity-btn minus" onclick="event.stopPropagation(); changeQuantity(this, -1)">-</button>
+                <span class="quantity">1</span>
+                <button class="quantity-btn plus" onclick="event.stopPropagation(); changeQuantity(this, 1)">+</button>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Invoice Popup -->
+    <div id="invoicePopup" class="popup-invoice" onclick="closeInvoicePopup()">
+        <div class="popup-invoice-content" onclick="event.stopPropagation()">
+            <div class="invoice-header">
+                <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Logo" class="invoice-logo">
+                <div class="invoice-meta">
+                    <h2>INVOICE</h2>
+                    <p id="invoiceDate">Date: <span id="currentDate"></span></p>
+
+                </div>
+            </div>
+            
+            <div class="invoice-body">
+                <div class="invoice-customer">
+                    <h3>Customer Details</h3>
+                    <input type="text" id="customerName" class="invoice-input" placeholder="Customer Name">
+                    <input type="text" id="customerPhone" class="invoice-input" placeholder="Phone Number">
+                    <textarea id="customerAddress" class="invoice-input" placeholder="Delivery Address (if needed)"></textarea>
+                </div>
+                
+                <div class="invoice-items-header">
+                    <div>Product</div>
+                    <div>Qty</div>
+                    <div>Price</div>
+                    <div>Total</div>
+                </div>
+                
+                <div id="invoiceItems" class="invoice-items">
+                    <!-- Items will be added here dynamically -->
+                </div>
+                
+                <div class="invoice-summary">
+                    <div class="invoice-total grand-total">
+                        <div>Grand Total:</div>
+                        <div id="invoiceGrandTotal">৳0</div>
+                    </div>
+                    <div id="invoiceTotal" style="display: none;">৳0</div>
+                </div>
+            </div>
+            
+            <div class="invoice-footer">
+                <p>Thank you for your order!</p>
+                <p>Contact: 01533649394 | Facebook: BLOCKS</p>
+            </div>
+            
+            <div class="invoice-actions">
+                <button class="invoice-button" onclick="printInvoice()">
+                    <i class="fas fa-print"></i> Print Invoice
+                </button>
+                <button class="invoice-button cancel" onclick="closeInvoicePopup()">
+                    <i class="fas fa-times"></i> Close
+                </button>
+            </div>
+        </div>
+    </div>
+    <script>
+        document.getElementById('currentDate').textContent = new Date().toLocaleDateString('en-GB');
+    </script>
+
+    <script>
+        let invoiceItems = [];
+        
+        function addToInvoice(productCard) {
+            const productName = productCard.querySelector('.product-name').innerText;
+            const productPrice = parseFloat(productCard.getAttribute('data-price'));
+            const productStock = parseInt(productCard.getAttribute('data-stock'));
+            const quantityControls = productCard.querySelector('.quantity-controls');
+            const quantityElement = productCard.querySelector('.quantity');
+            
+            // Check if product is already in invoice
+            const existingItemIndex = invoiceItems.findIndex(item => item.name === productName);
+            
+            if (existingItemIndex >= 0) {
+                // Increase quantity if possible
+                if (invoiceItems[existingItemIndex].quantity < productStock) {
+                    invoiceItems[existingItemIndex].quantity += 1;
+                    quantityElement.innerText = invoiceItems[existingItemIndex].quantity;
+                } else {
+                    alert('Cannot add more than available stock.');
+                }
+            } else {
+                // Add new item if stock is available
+                if (productStock > 0) {
+                    invoiceItems.push({
+                        name: productName,
+                        price: productPrice,
+                        quantity: 1,
+                        stock: productStock
+                    });
+                    
+                    // Show quantity controls
+                    quantityControls.style.display = 'flex';
+                    productCard.classList.add('selected');
+                } else {
+                    alert('Product is out of stock.');
+                }
+            }
+            
+            updateInvoiceButton();
+        }
+        
+        function changeQuantity(button, change) {
+            const quantityElement = button.parentElement.querySelector('.quantity');
+            const productCard = button.closest('.product-card');
+            const productName = productCard.querySelector('.product-name').innerText;
+            const currentQuantity = parseInt(quantityElement.innerText);
+            const productStock = parseInt(productCard.getAttribute('data-stock'));
+            const newQuantity = currentQuantity + change;
+            
+            if (newQuantity > 0 && newQuantity <= productStock) {
+                quantityElement.innerText = newQuantity;
+                
+                // Update invoiceItems array
+                const itemIndex = invoiceItems.findIndex(item => item.name === productName);
+                if (itemIndex >= 0) {
+                    invoiceItems[itemIndex].quantity = newQuantity;
+                }
+            } else if (newQuantity === 0) {
+                // Remove item from invoice
+                removeFromInvoice(productCard);
+                return;
+            } else {
+                alert('Cannot exceed available stock.');
+            }
+            
+            updateInvoiceButton();
+        }
+        
+        function removeFromInvoice(productCard) {
+            const productName = productCard.querySelector('.product-name').innerText;
+            invoiceItems = invoiceItems.filter(item => item.name !== productName);
+            
+            // Hide quantity controls
+            productCard.querySelector('.quantity-controls').style.display = 'none';
+            productCard.classList.remove('selected');
+            productCard.querySelector('.quantity').innerText = '1';
+            
+            updateInvoiceButton();
+        }
+        
+        function updateInvoiceButton() {
+            const btn = document.getElementById('viewInvoiceBtn');
+            if (invoiceItems.length > 0) {
+                btn.textContent = `View Invoice (${invoiceItems.length})`;
+                btn.disabled = false;
+            } else {
+                btn.textContent = 'View Invoice';
+                btn.disabled = true;
+            }
+        }
+        
+        function viewInvoice() {
+            if (invoiceItems.length === 0) return;
+            
+            const invoiceItemsContainer = document.getElementById('invoiceItems');
+            invoiceItemsContainer.innerHTML = '';
+            
+            let total = 0;
+            
+            invoiceItems.forEach(item => {
+                const itemTotal = item.price * item.quantity;
+                total += itemTotal;
+                
+                const itemElement = document.createElement('div');
+                itemElement.className = 'invoice-item';
+                itemElement.innerHTML = `
+                    <div class="invoice-item-name">${item.name}</div>
+                    <div class="invoice-item-quantity">${item.quantity}</div>
+                    <div class="invoice-item-price">৳${item.price}</div>
+                    <div class="invoice-item-total">৳${itemTotal}</div>
+                `;
+                invoiceItemsContainer.appendChild(itemElement);
+            });
+            
+            document.getElementById('invoiceGrandTotal').textContent = `৳${total}`;
+            document.getElementById('invoicePopup').style.display = 'block';
+        }
+        
+        function closeInvoicePopup() {
+            document.getElementById('invoicePopup').style.display = 'none';
+        }
+        
+        function printInvoice() {
+                const popupContent = document.querySelector('.popup-invoice-content').cloneNode(true);
+                const customerName = document.getElementById('customerName').value || 'N/A';
+                const customerPhone = document.getElementById('customerPhone').value || 'N/A';
+                const customerAddress = document.getElementById('customerAddress').value || 'N/A';
+                const printWindow = window.open('', '_blank');
+                
+                // Remove buttons from print view
+                const buttons = popupContent.querySelectorAll('button');
+                buttons.forEach(btn => btn.remove());
+                
+                // Remove max-height and overflow from invoice items for printing
+                const invoiceItems = popupContent.querySelector('.invoice-items');
+                invoiceItems.style.maxHeight = 'none';
+                invoiceItems.style.overflow = 'visible';
+                
+                printWindow.document.write(`
+                    <html>
+                        <head>
+                            <title>Invoice</title>
+                            <style>
+                                body { 
+                                    font-family: Arial, sans-serif; 
+                                    padding: 20px; 
+                                    color: #333;
+                                }
+                                .invoice-header {
+                                    display: flex;
+                                    align-items: center;
+                                    margin-bottom: 20px;
+                                    border-bottom: 2px solid #2d3436;
+                                    padding-bottom: 15px;
+                                }
+                                .invoice-logo {
+                                    height: 80px;
+                                    margin-right: 20px;
+                                }
+                                .invoice-items {
+                                    max-height: none !important;
+                                    overflow: visible !important;
+                                }
+                                .invoice-items-header, .invoice-item {
+                                    display: grid;
+                                    grid-template-columns: 3fr 1fr 1fr 1fr;
+                                    padding: 8px 0;
+                                }
+                                .invoice-items-header {
+                                    font-weight: bold;
+                                    border-bottom: 1px solid #ddd;
+                                }
+                                .invoice-item {
+                                    border-bottom: 1px solid #eee;
+                                }
+                                .invoice-summary {
+                                    margin-top: 30px;
+                                    text-align: right;
+                                }
+                                .grand-total {
+                                    font-size: 1.2em;
+                                    font-weight: bold;
+                                    border-top: 2px solid #2d3436;
+                                    margin-top: 10px;
+                                    padding-top: 15px;
+                                }
+                                .invoice-footer {
+                                    margin-top: 40px;
+                                    padding-top: 15px;
+                                    border-top: 1px solid #ddd;
+                                    text-align: center;
+                                    color: #666;
+                                    font-size: 0.9em;
+                                }
+                                @page {
+                                    size: A4;
+                                    margin: 10mm;
+                                }
+                                @media print {
+                                    body {
+                                        padding: 0;
+                                        font-size: 12pt;
+                                    }
+                                }
+                            </style>
+                        </head>
+                        <body>
+                            <div class="invoice-header">
+                                <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Logo" class="invoice-logo">
+                                <div class="invoice-meta">
+                                    <h2>INVOICE</h2>
+                                    <p>Date: ${new Date().toLocaleString('en-GB')}</p>
+                                </div>
+                            </div>
+                            <div class="invoice-customer">
+                            <h3>Customer Details</h3>
+                            <p><strong>Name:</strong> ${customerName}</p>
+                            <p><strong>Phone:</strong> ${customerPhone}</p>
+                            <p><strong>Address:</strong> ${customerAddress}</p>
+                            </div>
+                            ${popupContent.querySelector('.invoice-body').outerHTML
+                                .replace(/<div class="invoice-customer">[\s\S]*?<\/div>/, '')}
+                            <div class="invoice-footer">
+                                <p>Thank you for your order!</p>
+                                <p>Contact: 01533649394 | Facebook: BLOCKS</p>
+                            </div>
+                            <script>
+                                window.onload = function() {
+                                    window.print();
+                                    setTimeout(function() {
+                                        window.close();
+                                    }, 1000);
+                                };
+                            <\/script>
+                        </body>
+                    </html>
+                `);
+                printWindow.document.close();
+            }
+
+            document.getElementById('invoiceDate').textContent = new Date().toLocaleString('en-GB', {
+                weekday: 'short',
+                day: '2-digit',
+                month: 'short',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+                hour12: true
+            });
+
+    </script>
+
+    <script>
+        function filterProducts() {
+        const categorySelect = document.getElementById('categorySelect').value;
+        const priceSelect = document.getElementById('priceSelect').value;
+        const searchInput = document.getElementById('searchInput').value.toLowerCase();
+        const products = document.querySelectorAll('.product-card');
+    
+        const productsArray = Array.from(products);
+
+        if (priceSelect === 'low-to-high') {
+        productsArray.sort((a, b) => parseFloat(a.getAttribute('data-price')) - parseFloat(b.getAttribute('data-price')));
+        } else if (priceSelect === 'high-to-low') {
+        productsArray.sort((a, b) => parseFloat(b.getAttribute('data-price')) - parseFloat(a.getAttribute('data-price')));
+        } else if (priceSelect === 'none') {
+        productsArray.sort((a, b) => parseInt(a.getAttribute('data-stock')) - parseInt(b.getAttribute('data-stock'))); // Default sorting logic
+        }
+
+        const productsGrid = document.getElementById('productsGrid');
+        productsGrid.innerHTML = ''; // Clear the grid
+        productsArray.forEach(product => {
+        const productCategory = product.getAttribute('data-category');
+        const productName = product.querySelector('.product-name').innerText.toLowerCase();
+        const productPrice = parseFloat(product.getAttribute('data-price'));
+
+        let categoryMatch = categorySelect === 'all' || productCategory === categorySelect;
+        let searchMatch = productName.includes(searchInput);
+
+        if (categoryMatch && searchMatch) {
+        product.style.display = ''; // Ensure visible products are displayed
+        } else {
+        product.style.display = 'none'; // Hide non-matching products
+        }
+        productsGrid.appendChild(product); // Re-append all products to maintain order
+        });
+        }
+    </script>
+
+</body>
+</html>
