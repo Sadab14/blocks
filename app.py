@@ -1,7 +1,7 @@
 from flask import Flask, render_template
 import pandas as pd
 
-app = Flask(__name__)
+app = Flask(__name__, template_folder='../templates', static_folder='../static')
 
 @app.route('/')
 def home():
@@ -14,6 +14,8 @@ def invoice():
     df = pd.read_excel('data/stock.xlsx')
     products = df[df['Stock'] > 0].to_dict(orient='records')  # Only products with stock > 0
     return render_template('invoice.html', products=products)
+
+app = app
 
 if __name__ == '__main__':
     app.run(debug=True)
