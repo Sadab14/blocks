@@ -14,40 +14,53 @@
     </div>
     <script>
       function filterProducts() {
-      const categorySelect = document.getElementById('categorySelect').value;
-      const priceSelect = document.getElementById('priceSelect').value;
-      const searchInput = document.getElementById('searchInput').value.toLowerCase();
-      const products = document.querySelectorAll('.product-card');
+        const categorySelect = document.getElementById('categorySelect').value;
+        const priceSelect = document.getElementById('priceSelect').value;
+        const searchInput = document.getElementById('searchInput').value.toLowerCase();
+        const products = document.querySelectorAll('.product-card');
     
-      const productsArray = Array.from(products);
-
-      if (priceSelect === 'low-to-high') {
-        productsArray.sort((a, b) => parseFloat(a.getAttribute('data-price')) - parseFloat(b.getAttribute('data-price')));
-      } else if (priceSelect === 'high-to-low') {
-        productsArray.sort((a, b) => parseFloat(b.getAttribute('data-price')) - parseFloat(a.getAttribute('data-price')));
-      } else if (priceSelect === 'none') {
-        productsArray.sort((a, b) => parseInt(a.getAttribute('data-stock')) - parseInt(b.getAttribute('data-stock'))); // Default sorting logic
-      }
-
-      const productsGrid = document.getElementById('productsGrid');
-      productsGrid.innerHTML = ''; // Clear the grid
-      productsArray.forEach(product => {
-        const productCategory = product.getAttribute('data-category');
-        const productName = product.querySelector('.product-name').innerText.toLowerCase();
-        const productPrice = parseFloat(product.getAttribute('data-price'));
-
-        let categoryMatch = categorySelect === 'all' || productCategory === categorySelect;
-        let searchMatch = productName.includes(searchInput);
-
-        if (categoryMatch && searchMatch) {
-        product.style.display = ''; // Ensure visible products are displayed
-        } else {
-        product.style.display = 'none'; // Hide non-matching products
+        const productsArray = Array.from(products);
+    
+        if (priceSelect === 'low-to-high') {
+          productsArray.sort((a, b) => parseFloat(a.getAttribute('data-price')) - parseFloat(b.getAttribute('data-price')));
+        } else if (priceSelect === 'high-to-low') {
+          productsArray.sort((a, b) => parseFloat(b.getAttribute('data-price')) - parseFloat(a.getAttribute('data-price')));
+        } else if (priceSelect === 'a-to-z') {
+          productsArray.sort((a, b) => { // Alphabetical A–Z
+            const nameA = a.querySelector('.product-name').innerText.toLowerCase();
+            const nameB = b.querySelector('.product-name').innerText.toLowerCase();
+            return nameA.localeCompare(nameB);
+          });
+        } else if (priceSelect === 'z-to-a') {
+          productsArray.sort((a, b) => { // Alphabetical Z–A
+            const nameA = a.querySelector('.product-name').innerText.toLowerCase();
+            const nameB = b.querySelector('.product-name').innerText.toLowerCase();
+            return nameB.localeCompare(nameA);
+          });
+        } else if (priceSelect === 'none') {
+          productsArray.sort((a, b) => parseInt(a.getAttribute('data-stock')) - parseInt(b.getAttribute('data-stock'))); // Default sorting logic
         }
-        productsGrid.appendChild(product); // Re-append all products to maintain order
-      });
+    
+        const productsGrid = document.getElementById('productsGrid');
+        productsGrid.innerHTML = ''; // Clear the grid
+        productsArray.forEach(product => {
+          const productCategory = product.getAttribute('data-category');
+          const productName = product.querySelector('.product-name').innerText.toLowerCase();
+          const productPrice = parseFloat(product.getAttribute('data-price'));
+    
+          let categoryMatch = categorySelect === 'all' || productCategory === categorySelect;
+          let searchMatch = productName.includes(searchInput);
+    
+          if (categoryMatch && searchMatch) {
+            product.style.display = ''; // Ensure visible products are displayed
+          } else {
+            product.style.display = 'none'; // Hide non-matching products
+          }
+          productsGrid.appendChild(product); // Re-append all products to maintain order
+        });
       }
     </script>
+    
 
     <div class="social-buttons">
       <button class="fb-button" onclick="window.open('https://www.facebook.com/profile.php?id=61557694115403', '_blank')">
@@ -84,6 +97,8 @@
       <option value="none">None</option>
       <option value="low-to-high">Low to High</option>
       <option value="high-to-low">High to Low</option>
+      <option value="a-to-z">Alphabetical (A–Z)</option>
+      <option value="z-to-a">Alphabetical (Z–A)</option>
     </select>
 
     <input 
