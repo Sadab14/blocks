@@ -15,6 +15,10 @@ def invoice():
     products = df[df['Stock'] > 0].to_dict(orient='records')  # Only products with stock > 0
     return render_template('invoice.html', products=products)
 
+@app.route('/how_order')
+def how_order():
+    return render_template('how_order.html')
+
 app = app
 
 if __name__ == '__main__':

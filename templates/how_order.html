@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>How to Order - BLOCKS</title>
+  <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/favicon.png') }}">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #ffffff;
+      color: #000;
+      max-width: 800px;
+      margin: auto;
+      padding: 20px;
+    }
+    h1 {
+      text-align: center;
+      font-size: 28px;
+      margin-bottom: 40px;
+    }
+    ul {
+      margin-bottom: 20px;
+    }
+    li {
+      font-size: 16px;
+      margin-bottom: 10px;
+    }
+    img {
+      max-width: 100%;
+      height: auto;
+      display: block;
+      margin: 20px auto;
+    }
+    .contact {
+      text-align: center;
+      margin-top: 40px;
+    }
+    .contact a {
+      display: block;
+      font-size: 16px;
+      color: #1155cc;
+      margin: 5px 0;
+      text-decoration: none;
+    }
+  </style>
+</head>
+<body>
+    <div class="logo-container">
+        <a href="{{ url_for('home') }}">
+            <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Logo" style="height: 130px; margin-left: 15px;">
+        </a>
+    </div>
+    <div style="text-align: center; margin-bottom: 20px;">
+        <a href="{{ url_for('home') }}" style="display: inline-block; padding: 10px 20px; background-color: #303030; color: #fff; text-decoration: none; border-radius: 5px; font-size: 16px; position: absolute; right: 550px; top: 100px;">Go Back to Home</a>
+    </div></div>
+  <h1>How to Order from the <span style="font-family: Impact;">BLOCKS</span> Website</h1>
+
+  <ul>
+    <li>Go to <strong>Create Order</strong></li>
+  </ul>
+  <img src="static/images/image1.png" alt="Create Order Screenshot">
+
+  <ul>
+    <li>Select the minifigures you want to buy</li>
+  </ul>
+  <img src="static/images/image3.png" alt="Minifigure Selection Screenshot">
+
+  <ul>
+    <li>After selecting, click <strong>View Invoice</strong> and fill in the necessary details <b>(Name, Phone Number, Address)</b></li>
+  </ul>
+  <img src="static/images/image2.png" alt="Invoice Form Screenshot">
+
+  <ul>
+    <li>Then click <strong>Print Invoice</strong> or take a screenshot of the invoice and send it to our Facebook or WhatsApp chat to confirm the order. Our team will confirm it.</li>
+  </ul>
+
+  <div class="contact">
+    <p><strong>Contact us:</strong></p>
+    <a href="https://www.facebook.com/profile.php?id=61557694115403" target="_blank" style="color: #1877F2;">Facebook</a>
+    <a href="https://wa.me/01533649394" target="_blank" style="color: #25D366;">WhatsApp</a>
+    <p>&#128222; +8801533649394</p>
+  </div>
+</body>
+</html>
