@@ -19,12 +19,34 @@
     <div class="header">
         <div class="logo-container">
             <a href="{{ url_for('home') }}">
-                <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Logo" style="height: 130px; margin-right: 15px;">
+                <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Logo" style="height: 110px; margin-right: 15px; margin-left: 60px; cursor: pointer;">
             </a>
         </div>
+        
         <div class="invoice-header">
             <h1>Create Order</h1>
+            <div style="margin-top: 10px;"></div>
+            <div style="display: flex; gap: 20px; flex-wrap: wrap; align-items: center;">
+            <a href="https://www.facebook.com/blocks_snap_that/" target="_blank">
+                <img src="{{ url_for('static', filename='images/fb.png') }}" alt="Facebook" 
+                 style="width: 24px; height: 24px; transition: transform 0.3s;" 
+                 onmouseover="this.style.transform='scale(1.2)'" 
+                 onmouseout="this.style.transform='scale(1)'">
+            </a>
+            <a href="https://www.instagram.com/blocks_snap_that/" target="_blank">
+                <img src="{{ url_for('static', filename='images/ig.png') }}" alt="Instagram" 
+                 style="width: 24px; height: 24px; transition: transform 0.3s;" 
+                 onmouseover="this.style.transform='scale(1.2)'" 
+                 onmouseout="this.style.transform='scale(1)'">
+            </a>
+            <a href="https://wa.me/+8801533649394" target="_blank">
+                <img src="{{ url_for('static', filename='images/wp.png') }}" alt="WhatsApp" 
+                 style="width: 24px; height: 24px; transition: transform 0.3s;" 
+                 onmouseover="this.style.transform='scale(1.2)'" 
+                 onmouseout="this.style.transform='scale(1)'">
+            </a>
             <button id="viewInvoiceBtn" class="invoice-button" onclick="viewInvoice()">View Invoice</button>
+            </div>
         </div>
         
     </div>
@@ -40,7 +62,8 @@
           <option value="Naruto">Naruto</option>
           <option value="JJK">JJK</option>
           <option value="Demon Slayer">Demon Slayer</option>
-            <option value="Others">Others</option>
+          <option value="Others">Others</option>
+          <option value="DBZ">Dragon Ball Z</option>
         </select>
     
         <select id="priceSelect" class="form-select modern-button" style="width: auto;" onchange="filterProducts()">
