@@ -7,7 +7,8 @@ app = Flask(__name__)
 def home():
     df = pd.read_excel('data/stock.xlsx')
     products = df.to_dict(orient='records')  # This includes the new Category column
-    return render_template('index.html', products=products)
+    slides = [f"slide{i}.jpg" for i in range(1, 7)]
+    return render_template('index.html', products=products, slides=slides)
 
 @app.route('/invoice')
 def invoice():
