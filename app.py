@@ -20,6 +20,26 @@ def invoice():
 def how_order():
     return render_template('how_order.html')
 
+@app.route('/pre_order')
+def pre_order():
+    df = pd.read_excel('data/pre_order.xlsx')
+    if 'Category' in df.columns:
+        categories = df['Category'].drop_duplicates().tolist()
+    else:
+        categories = []
+    return render_template('pre_order.html', categories=categories, products=None, selected_category=None)
+
+@app.route('/pre_order/<category>')
+def pre_order_category(category):
+    df = pd.read_excel('data/pre_order.xlsx')
+    if 'Category' in df.columns:
+        categories = df['Category'].drop_duplicates().tolist()
+        products = df[df['Category'] == category].to_dict(orient='records')
+    else:
+        categories = []
+        products = []
+    return render_template('pre_order.html', categories=categories, products=products, selected_category=category)
+
 app = app
 
 if __name__ == '__main__':
