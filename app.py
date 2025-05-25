@@ -6,15 +6,29 @@ app = Flask(__name__)
 @app.route('/')
 def home():
     df = pd.read_excel('data/stock.xlsx')
-    products = df.to_dict(orient='records')  # This includes the new Category column
+    products = df.to_dict(orient='records')
+    # Extract all unique categories
+    categories = set()
+    for prod in products:
+        if 'Category' in prod and prod['Category']:
+            for cat in [c.strip() for c in str(prod['Category']).split(',')]:
+                categories.add(cat)
+    categories = sorted(categories)
     slides = [f"slide{i}.jpg" for i in range(1, 7)]
-    return render_template('index.html', products=products, slides=slides)
+    return render_template('index.html', products=products, slides=slides, categories=categories)
 
 @app.route('/invoice')
 def invoice():
     df = pd.read_excel('data/stock.xlsx')
-    products = df[df['Stock'] > 0].to_dict(orient='records')  # Only products with stock > 0
-    return render_template('invoice.html', products=products)
+    products = df[df['Stock'] > 0].to_dict(orient='records')
+    # Extract all unique categories
+    categories = set()
+    for prod in products:
+        if 'Category' in prod and prod['Category']:
+            for cat in [c.strip() for c in str(prod['Category']).split(',')]:
+                categories.add(cat)
+    categories = sorted(categories)
+    return render_template('invoice.html', products=products, categories=categories)
 
 @app.route('/how_order')
 def how_order():
@@ -24,7 +38,12 @@ def how_order():
 def pre_order():
     df = pd.read_excel('data/pre_order.xlsx')
     if 'Category' in df.columns:
-        categories = df['Category'].drop_duplicates().tolist()
+        # Split and flatten all categories
+        categories = set()
+        for cats in df['Category'].dropna():
+            for cat in [c.strip() for c in cats.split(',')]:
+                categories.add(cat)
+        categories = sorted(categories)
     else:
         categories = []
     return render_template('pre_order.html', categories=categories, products=None, selected_category=None)
@@ -34,7 +53,8 @@ def pre_order_category(category):
     df = pd.read_excel('data/pre_order.xlsx')
     if 'Category' in df.columns:
         categories = df['Category'].drop_duplicates().tolist()
-        products = df[df['Category'] == category].to_dict(orient='records')
+        # Show products where the category is in the comma-separated list
+        products = df[df['Category'].str.contains(rf'\b{category}\b', case=False, na=False)].to_dict(orient='records')
     else:
         categories = []
         products = []

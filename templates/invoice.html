@@ -126,7 +126,7 @@
     <div id="productsGrid" class="products-grid">
         {% for product in products %}
         <div class="product-card invoice-product" 
-             data-category="{{ product['Category'] }}" 
+             data-category="{{ product['Category'] | lower }}" 
              data-price="{{ product['Price'] }}"
              data-stock="{{ product['Stock'] }}"
              onclick="addToInvoice(this)">
@@ -468,9 +468,9 @@
       const priceSelect = document.getElementById('priceSelect').value;
       const searchInput = document.getElementById('searchInput').value.toLowerCase();
       const products = document.querySelectorAll('.product-card');
-  
+
       const productsArray = Array.from(products);
-  
+
       if (priceSelect === 'low-to-high') {
         productsArray.sort((a, b) => parseFloat(a.getAttribute('data-price')) - parseFloat(b.getAttribute('data-price')));
       } else if (priceSelect === 'high-to-low') {
@@ -496,9 +496,10 @@
       productsArray.forEach(product => {
         const productCategory = product.getAttribute('data-category');
         const productName = product.querySelector('.product-name').innerText.toLowerCase();
-        const productPrice = parseFloat(product.getAttribute('data-price'));
   
-        let categoryMatch = categorySelect === 'all' || productCategory === categorySelect;
+        // Updated category match logic for multi-category support
+        let categoryMatch = categorySelect === 'all' ||
+          productCategory.split(',').map(c => c.trim().toLowerCase()).includes(categorySelect.toLowerCase());
         let searchMatch = productName.includes(searchInput);
   
         if (categoryMatch && searchMatch) {

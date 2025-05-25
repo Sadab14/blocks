@@ -54,9 +54,10 @@
         productsArray.forEach(product => {
           const productCategory = product.getAttribute('data-category');
           const productName = product.querySelector('.product-name').innerText.toLowerCase();
-          const productPrice = parseFloat(product.getAttribute('data-price'));
     
-          let categoryMatch = categorySelect === 'all' || productCategory === categorySelect;
+          // Updated category match logic for multi-category support
+          let categoryMatch = categorySelect === 'all' ||
+            productCategory.split(',').map(c => c.trim().toLowerCase()).includes(categorySelect.toLowerCase());
           let searchMatch = productName.includes(searchInput);
     
           if (categoryMatch && searchMatch) {
@@ -255,7 +256,7 @@
   <div class="products-grid" id="productsGrid">
     {% for product in products %}
     {% if product['Stock'] > 0 %}
-    <div class="product-card" data-category="{{ product['Category'] }}" data-stock="{{ product['Stock'] }}" data-price="{{ product['Price'] }}" onclick="showPopup(this)">
+    <div class="product-card" data-category="{{ product['Category'] | lower }}" data-stock="{{ product['Stock'] }}" data-price="{{ product['Price'] }}" onclick="showPopup(this)">
       {% if product['Image'] %}
       <img src="{{ url_for('static', filename='images/' + product['Image']) }}" class="product-image" alt="{{ product['Product'] }}">
       {% else %}
