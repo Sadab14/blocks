@@ -168,6 +168,14 @@
                     <input type="text" id="customerName" class="invoice-input" placeholder="Customer Name">
                     <input type="text" id="customerPhone" class="invoice-input" placeholder="Phone Number">
                     <textarea id="customerAddress" class="invoice-input" placeholder="Delivery Address (if needed)"></textarea>
+                    <!-- Delivery Area Option -->
+                    <div style="margin-top:10px;">
+                        <label><strong>Delivery Area:</strong></label>
+                        <select id="deliveryArea" class="invoice-input" style="width:auto;display:inline-block;margin-left:10px;">
+                            <option value="inside">Inside Dhaka (+৳60)</option>
+                            <option value="outside">Outside Dhaka (+৳120)</option>
+                        </select>
+                    </div>
                 </div>
                 
                 <div class="invoice-items-header">
@@ -303,16 +311,17 @@
         
         function viewInvoice() {
             if (invoiceItems.length === 0) return;
-            
+
             const invoiceItemsContainer = document.getElementById('invoiceItems');
             invoiceItemsContainer.innerHTML = '';
-            
+
             let total = 0;
-            
+            let totalQuantity = 0;
             invoiceItems.forEach(item => {
                 const itemTotal = item.price * item.quantity;
                 total += itemTotal;
-                
+                totalQuantity += item.quantity; // Add this line
+
                 const itemElement = document.createElement('div');
                 itemElement.className = 'invoice-item';
                 itemElement.innerHTML = `
@@ -323,7 +332,37 @@
                 `;
                 invoiceItemsContainer.appendChild(itemElement);
             });
-            
+
+            // Add delivery charge based on selection
+            const deliveryArea = document.getElementById('deliveryArea');
+            let deliveryCharge = 60;
+            let deliveryText = "Inside Dhaka (+৳60)";
+            if (deliveryArea && deliveryArea.value === 'outside') {
+                deliveryCharge = 120;
+                deliveryText = "Outside Dhaka (+৳120)";
+            }
+            total += deliveryCharge;
+
+            // Add delivery charge line to invoice
+            let deliveryLine = document.getElementById('invoiceDeliveryCharge');
+            if (!deliveryLine) {
+                deliveryLine = document.createElement('div');
+                deliveryLine.id = 'invoiceDeliveryCharge';
+                deliveryLine.style = "margin-top:8px;text-align:right;font-weight:bold;";
+                document.querySelector('.invoice-summary').insertBefore(deliveryLine, document.getElementById('invoiceGrandTotal').parentElement);
+            }
+            deliveryLine.innerHTML = `Delivery Charge: <span style="font-weight:normal">${deliveryText}</span>`;
+
+            // Add or update total quantity line in invoice
+            let quantityLine = document.getElementById('invoiceTotalQuantity');
+            if (!quantityLine) {
+                quantityLine = document.createElement('div');
+                quantityLine.id = 'invoiceTotalQuantity';
+                quantityLine.style = "margin-top:8px;text-align:right;font-weight:bold;";
+                document.querySelector('.invoice-summary').insertBefore(quantityLine, document.getElementById('invoiceGrandTotal').parentElement);
+            }
+            quantityLine.innerHTML = `Total Quantity: <span style="font-weight:normal">${totalQuantity}</span>`;
+
             document.getElementById('invoiceGrandTotal').textContent = `৳${total}`;
             document.getElementById('invoicePopup').style.display = 'block';
         }
@@ -333,122 +372,137 @@
         }
         
         function printInvoice() {
-                const popupContent = document.querySelector('.popup-invoice-content').cloneNode(true);
-                const customerName = document.getElementById('customerName').value || 'N/A';
-                const customerPhone = document.getElementById('customerPhone').value || 'N/A';
-                const customerAddress = document.getElementById('customerAddress').value || 'N/A';
-                const printWindow = window.open('', '_blank');
-                
-                // Remove buttons from print view
-                const buttons = popupContent.querySelectorAll('button');
-                buttons.forEach(btn => btn.remove());
-                
-                // Remove max-height and overflow from invoice items for printing
-                const invoiceItems = popupContent.querySelector('.invoice-items');
-                invoiceItems.style.maxHeight = 'none';
-                invoiceItems.style.overflow = 'visible';
-                
-                printWindow.document.write(`
-                    <html>
-                        <head>
-                            <title>Invoice</title>
-                            <style>
-                                body { 
-                                    font-family: Arial, sans-serif; 
-                                    padding: 20px; 
-                                    color: #333;
-                                }
-                                .invoice-header {
-                                    display: flex;
-                                    align-items: center;
-                                    margin-bottom: 20px;
-                                    border-bottom: 2px solid #2d3436;
-                                    padding-bottom: 15px;
-                                }
-                                .invoice-logo {
-                                    height: 80px;
-                                    margin-right: 20px;
-                                }
-                                .invoice-items {
-                                    max-height: none !important;
-                                    overflow: visible !important;
-                                }
-                                .invoice-items-header, .invoice-item {
-                                    display: grid;
-                                    grid-template-columns: 3fr 1fr 1fr 1fr;
-                                    padding: 8px 0;
-                                }
-                                .invoice-items-header {
-                                    font-weight: bold;
-                                    border-bottom: 1px solid #ddd;
-                                }
-                                .invoice-item {
-                                    border-bottom: 1px solid #eee;
-                                }
-                                .invoice-summary {
-                                    margin-top: 30px;
-                                    text-align: right;
-                                }
-                                .grand-total {
-                                    font-size: 1.2em;
-                                    font-weight: bold;
-                                    border-top: 2px solid #2d3436;
-                                    margin-top: 10px;
-                                    padding-top: 15px;
-                                }
-                                .invoice-footer {
-                                    margin-top: 40px;
-                                    padding-top: 15px;
-                                    border-top: 1px solid #ddd;
-                                    text-align: center;
-                                    color: #666;
-                                    font-size: 0.9em;
-                                }
-                                @page {
-                                    size: A4;
-                                    margin: 10mm;
-                                }
-                                @media print {
-                                    body {
-                                        padding: 0;
-                                        font-size: 12pt;
-                                    }
-                                }
-                            </style>
-                        </head>
-                        <body>
-                            <div class="invoice-header">
-                                <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Logo" class="invoice-logo">
-                                <div class="invoice-meta">
-                                    <h2>INVOICE</h2>
-                                    <p>Date: ${new Date().toLocaleString('en-GB')}</p>
-                                </div>
-                            </div>
-                            <div class="invoice-customer">
-                            <h3>Customer Details</h3>
-                            <p><strong>Name:</strong> ${customerName}</p>
-                            <p><strong>Phone:</strong> ${customerPhone}</p>
-                            <p><strong>Address:</strong> ${customerAddress}</p>
-                            </div>
-                            ${popupContent.querySelector('.invoice-body').outerHTML
-                                .replace(/<div class="invoice-customer">[\s\S]*?<\/div>/, '')}
-                            <div class="invoice-footer">
-                                <p>Thank you for your order!</p>
-                                <p>Contact: 01533649394 | Facebook: BLOCKS</p>
-                            </div>
-                            <script>
-                                window.onload = function() {
-                                    window.print();
-                                    setTimeout(function() {
-                                        window.close();
-                                    }, 1000);
-                                };
-                            <\/script>
-                        </body>
-                    </html>
-                `);
-                printWindow.document.close();
-            }
+    const popupContent = document.querySelector('.popup-invoice-content').cloneNode(true);
+    const customerName = document.getElementById('customerName').value || 'N/A';
+    const customerPhone = document.getElementById('customerPhone').value || 'N/A';
+    const customerAddress = document.getElementById('customerAddress').value || 'N/A';
+    const deliveryArea = document.getElementById('deliveryArea').value;
+    let deliveryCharge = deliveryArea === 'outside' ? 120 : 60;
+
+    // Remove buttons from print view
+    const buttons = popupContent.querySelectorAll('button');
+    buttons.forEach(btn => btn.remove());
+
+    // Remove max-height and overflow from invoice items for printing
+    const invoiceItems = popupContent.querySelector('.invoice-items');
+    invoiceItems.style.maxHeight = 'none';
+    invoiceItems.style.overflow = 'visible';
+
+    // Calculate total for print
+    let total = 0;
+    invoiceItems.querySelectorAll('.invoice-item').forEach(item => {
+        const price = parseFloat(item.querySelector('.invoice-item-price').textContent.replace(/[^\d.]/g, ''));
+        const qty = parseInt(item.querySelector('.invoice-item-quantity').textContent);
+        total += price * qty;
+    });
+    total += deliveryCharge;
+
+    // Update grand total in print
+    popupContent.querySelector('#invoiceGrandTotal').textContent = `৳${total}`;
+
+    const printWindow = window.open('', '_blank');
+    printWindow.document.write(`
+        <html>
+            <head>
+                <title>Invoice</title>
+                <style>
+                    body { 
+                        font-family: Arial, sans-serif; 
+                        padding: 20px; 
+                        color: #333;
+                    }
+                    .invoice-header {
+                        display: flex;
+                        align-items: center;
+                        margin-bottom: 20px;
+                        border-bottom: 2px solid #2d3436;
+                        padding-bottom: 15px;
+                    }
+                    .invoice-logo {
+                        height: 80px;
+                        margin-right: 20px;
+                    }
+                    .invoice-items {
+                        max-height: none !important;
+                        overflow: visible !important;
+                    }
+                    .invoice-items-header, .invoice-item {
+                        display: grid;
+                        grid-template-columns: 3fr 1fr 1fr 1fr;
+                        padding: 8px 0;
+                    }
+                    .invoice-items-header {
+                        font-weight: bold;
+                        border-bottom: 1px solid #ddd;
+                    }
+                    .invoice-item {
+                        border-bottom: 1px solid #eee;
+                    }
+                    .invoice-summary {
+                        margin-top: 30px;
+                        text-align: right;
+                    }
+                    .grand-total {
+                        font-size: 1.2em;
+                        font-weight: bold;
+                        border-top: 2px solid #2d3436;
+                        margin-top: 10px;
+                        padding-top: 15px;
+                    }
+                    .invoice-footer {
+                        margin-top: 40px;
+                        padding-top: 15px;
+                        border-top: 1px solid #ddd;
+                        text-align: center;
+                        color: #666;
+                        font-size: 0.9em;
+                    }
+                    @page {
+                        size: A4;
+                        margin: 10mm;
+                    }
+                    @media print {
+                        body {
+                            padding: 0;
+                            font-size: 12pt;
+                        }
+                    }
+                </style>
+            </head>
+            <body>
+                <div class="invoice-header">
+                    <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Logo" class="invoice-logo">
+                    <div class="invoice-meta">
+                        <h2>INVOICE</h2>
+                        <p>Date: ${new Date().toLocaleString('en-GB')}</p>
+                    </div>
+                </div>
+                <div class="invoice-customer">
+                <h3>Customer Details</h3>
+                <p><strong>Name:</strong> ${customerName}</p>
+                <p><strong>Phone:</strong> ${customerPhone}</p>
+                <p><strong>Address:</strong> ${customerAddress}</p>
+                <p><strong>Delivery Area:</strong> ${deliveryArea === 'outside' ? 'Outside Dhaka (+৳120)' : 'Inside Dhaka (+৳60)'}</p>
+                </div>
+                ${popupContent.querySelector('.invoice-body').outerHTML
+                    .replace(/<div class="invoice-customer">[\s\S]*?<\/div>/, '')}
+                <div class="invoice-footer">
+                    <p>Thank you for your order!</p>
+                    <p>Contact: 01533649394 | Facebook: BLOCKS</p>
+                </div>
+                <script>
+                    window.onload = function() {
+                        window.print();
+                        setTimeout(function() {
+                            window.close();
+                        }, 1000);
+                    };
+                <\/script>
+            </body>
+        </html>
+    `);
+    printWindow.document.close();
+}
 
             document.getElementById('invoiceDate').textContent = new Date().toLocaleString('en-GB', {
                 weekday: 'short',
@@ -512,6 +566,19 @@
     }
   </script>
   
+  <!-- Update grand total when delivery area changes in popup -->
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const deliveryArea = document.getElementById('deliveryArea');
+        if (deliveryArea) {
+            deliveryArea.addEventListener('change', function() {
+                if (document.getElementById('invoicePopup').style.display === 'block') {
+                    viewInvoice();
+                }
+            });
+        }
+    });
+  </script>
 
 </body>
 </html>
