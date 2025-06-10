@@ -176,6 +176,12 @@
                             <option value="outside">Outside Dhaka (+৳120)</option>
                         </select>
                     </div>
+                    <div style="margin-top:10px;">
+                        <label><strong>Preferred Contact (Social Links) [Facebook/Instagram/Whatsapp]:</strong></label>
+                        <input type="text" id="customerFB" class="invoice-input" placeholder="Facebook Profile Link" style="margin-top:5px;">
+                        <input type="text" id="customerInsta" class="invoice-input" placeholder="Instagram Username or Link" style="margin-top:5px;">
+                        <input type="text" id="customerWA" class="invoice-input" placeholder="WhatsApp Number or Link" style="margin-top:5px;">
+                    </div>
                 </div>
                 
                 <div class="invoice-items-header">
@@ -206,6 +212,9 @@
             <div class="invoice-actions">
                 <button class="invoice-button" onclick="printInvoice()">
                     <i class="fas fa-print"></i> Print Invoice
+                </button>
+                <button class="invoice-button" onclick="confirmOrder()">
+                    <i class="fas fa-check"></i> Confirm Order
                 </button>
                 <button class="invoice-button cancel" onclick="closeInvoicePopup()">
                     <i class="fas fa-times"></i> Close
@@ -579,6 +588,85 @@
         }
     });
   </script>
+  <script>
+    function confirmOrder() {
+        if (!confirm("Are you sure you want to confirm and lock in this order?")) {
+            return; // User cancelled
+        }
+        // Gather invoice data
+        const customerName = document.getElementById('customerName').value || 'N/A';
+        const customerPhone = document.getElementById('customerPhone').value || 'N/A';
+        const customerAddress = document.getElementById('customerAddress').value || 'N/A';
+        const customerFB = document.getElementById('customerFB').value || 'N/A';
+        const customerInsta = document.getElementById('customerInsta').value || 'N/A';
+        const customerWA = document.getElementById('customerWA').value || 'N/A';
+        const deliveryArea = document.getElementById('deliveryArea').value;
+        let deliveryCharge = deliveryArea === 'outside' ? 120 : 60;
 
+        // Gather items
+        const items = invoiceItems.map(item => ({
+            name: item.name,
+            price: item.price,
+            quantity: item.quantity
+        }));
+
+        // Prepare data
+        const data = {
+            customerName,
+            customerPhone,
+            customerAddress,
+            customerFB,
+            customerInsta,
+            customerWA,
+            deliveryArea,
+            deliveryCharge,
+            items
+        };
+
+        // Show loading overlay
+        document.getElementById('confirmLoading').style.display = 'flex';
+
+        // Send to backend
+        fetch('/confirm_order', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data)
+        })
+        .then(res => res.json())
+        .then(response => {
+            // Hide loading overlay
+            document.getElementById('confirmLoading').style.display = 'none';
+
+            if (response.success) {
+                alert('Order confirmed! Our member will send a confirmation text through your given social platform.');
+                closeInvoicePopup();
+            } else {
+                alert('Failed to confirm order. Please try again.');
+            }
+        })
+        .catch(() => {
+            // Hide loading overlay
+            document.getElementById('confirmLoading').style.display = 'none';
+
+            alert('Failed to confirm order. Please try again.');
+        });
+    }
+  </script>
+
+<!-- Add this just before </body> -->
+<div id="confirmLoading" style="display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:2000;background:transparent;align-items:center;justify-content:center;">
+  <div style="background:#fff;padding:30px 40px;border-radius:12px;box-shadow:0 2px 12px #0002;display:flex;flex-direction:column;align-items:center;">
+    <div class="loader" style="border:6px solid #f3f3f3;border-top:6px solid #333;border-radius:50%;width:40px;height:40px;animation:spin 1s linear infinite;"></div>
+    <div style="margin-top:15px;font-size:1.1em;">Confirming your order...</div>
+  </div>
+</div>
+<style>
+@keyframes spin {
+  0% { transform: rotate(0deg);}
+  100% { transform: rotate(360deg);}
+}
+</style>
 </body>
 </html>

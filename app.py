@@ -60,6 +60,43 @@ def pre_order_category(category):
         products = []
     return render_template('pre_order.html', categories=categories, products=products, selected_category=category)
 
+from flask import request, jsonify
+import smtplib
+from email.mime.text import MIMEText
+
+@app.route('/confirm_order', methods=['POST'])
+def confirm_order():
+    data = request.get_json()
+    total = sum(item['price'] * item['quantity'] for item in data['items']) + int(data['deliveryCharge'])
+    subject = "New Order from BLOCKS"
+    body = f"""
+    Name: {data['customerName']}
+    Phone: {data['customerPhone']}
+    Address: {data['customerAddress']}
+    Facebook: {data.get('customerFB', '')}
+    Instagram: {data.get('customerInsta', '')}
+    WhatsApp: {data.get('customerWA', '')}
+    Delivery Area: {data['deliveryArea']}
+    Delivery Charge: {data['deliveryCharge']}
+    Items:
+    """
+    for item in data['items']:
+        body += f"\n- {item['name']} x{item['quantity']} (৳{item['price']})"
+    body += f"\n\nTotal: ৳{total}"
+    try:
+        msg = MIMEText(body)
+        msg['Subject'] = subject
+        msg['From'] = 'sadabshakib14@gmail.com'
+        msg['To'] = 'blocks.snapthat@gmail.com'
+        with smtplib.SMTP('smtp.gmail.com', 587) as server:
+            server.starttls()
+            server.login('sadabshakib14@gmail.com', 'gwko ngdx fgze aqti')
+            server.send_message(msg)
+        return jsonify({'success': True})
+    except Exception as e:
+        print(e)
+        return jsonify({'success': False})
+
 app = app
 
 if __name__ == '__main__':
