@@ -1,16 +1,16 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>How to Order - BLOCKS</title>
   <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/favicon.png') }}">
   <style>
     body {
-      font-family: Arial, sans-serif;
+      font-family: "Proxima Nova", Arial, sans-serif;
       background-color: #ffffff;
       color: #000;
-      max-width: 800px;
+      max-width: 900px;
       margin: auto;
       padding: 20px;
     }
@@ -18,30 +18,31 @@
       text-align: center;
       font-size: 28px;
       margin-bottom: 40px;
+      font-weight: bold;
     }
-    ul {
-      margin-bottom: 20px;
+    ol {
+      padding-left: 20px;
     }
     li {
-      font-size: 20px;
-      margin-bottom: 10px;
+      font-size: 18px;
+      margin-bottom: 20px;
     }
     img {
       max-width: 100%;
       height: auto;
       display: block;
-      margin: 20px auto;
+      margin: 15px auto;
+    }
+    .note {
+      font-style: italic;
+      font-weight: bold;
+      margin-top: -15px;
+      margin-bottom: 10px;
+      text-align: center;
     }
     .contact {
       text-align: center;
       margin-top: 40px;
-    }
-    .contact a {
-      display: block;
-      font-size: 16px;
-      color: #1155cc;
-      margin: 5px 0;
-      text-decoration: none;
     }
   </style>
 </head>
@@ -52,37 +53,41 @@
         </a>
     </div>
     <div style="text-align: center; margin-bottom: 20px;">
-        <a href="{{ url_for('home') }}" style="display: inline-block; padding: 10px 20px; background-color: #303030; color: #fff; text-decoration: none; border-radius: 5px; font-size: 16px; position: absolute; right: 550px; top: 100px;">Go Back to Home</a>
+        <a href="{{ url_for('home') }}" style="display: inline-block; padding: 10px 20px; background-color: #303030; color: #fff; text-decoration: none; border-radius: 50px; font-size: 16px; position: absolute; right: 550px; top: 100px;">Go Back to Home</a>
     </div></div>
-  <h1>How to Order from the <span style="font-family: Impact;">BLOCKS</span> Website</h1>
+
+  <h1>How to <strong>Order</strong></h1>
 
   <ul>
     <li>Go to <strong>Create Order</strong></li>
-  </ul>
-  <br>
-  <img src="static/images/image1.png" alt="Create Order Screenshot">
-  <br>
-  <ul>
+    <img src="{{ url_for('static', filename='images/image3.jpg') }}" alt="Create Order Screenshot">
+
     <li>Select the minifigures you want to buy</li>
-  </ul>
-  <br>
-  <img src="static/images/image3.png" alt="Minifigure Selection Screenshot">
-  <br>
-  <ul>
-    <li>After selecting, click <strong>View Invoice</strong> and fill in the necessary details <b>(Name, Phone Number, Address)</b></li>
-  </ul>
-  <br>
-  <img src="static/images/image2.png" alt="Invoice Form Screenshot">
-  <br>
-  <ul>
-    <li>Then click <strong>Print Invoice</strong> or take a screenshot of the invoice and send it to our Facebook or WhatsApp chat to confirm the order. Our team will confirm it.</li>
+    <img src="{{ url_for('static', filename='images/image7.jpg') }}" alt="Select Minifigures">
+
+    <li>After selecting, click <strong>View Invoice</strong></li>
+    <img src="{{ url_for('static', filename='images/image1.jpg') }}" alt="View Invoice Screenshot">
+
+    <li>Fill in the necessary details: <strong>Name, Phone Number, Address, Delivery Area</strong></li>
+    <p class="note">***Must provide ONE of the Social Contacts***</p>
+    <img src="{{ url_for('static', filename='images/image6.jpg') }}" alt="Fill Details">
+
+    <li>After filling up, click <strong>Confirm Order</strong></li>
+    <img src="{{ url_for('static', filename='images/image2.jpg') }}" alt="Confirm Order Screenshot">
+
+    <li>Click <strong>OK</strong> to lock in your order</li>
+    <img src="{{ url_for('static', filename='images/image5.jpg') }}" alt="Order Confirmation">
+
+    <li>Tap <strong>OK</strong> and <strong>relax!</strong> Your Minifigures are on their way</li>
+    <img src="{{ url_for('static', filename='images/image4.jpg') }}" alt="Order Complete">
   </ul>
 
   <div class="contact">
     <p><strong>Contact us:</strong></p>
-    <a href="https://www.facebook.com/profile.php?id=61557694115403" target="_blank" style="color: #1877F2;">Facebook</a>
+    <a href="https://www.facebook.com/profile.php?id=61557694115403" target="_blank" style="color: #1877F2;">Facebook</a><br>
     <a href="https://wa.me/+8801533649394" target="_blank" style="color: #25D366;">WhatsApp</a>
     <p>&#128222; +8801533649394</p>
   </div>
+
 </body>
 </html>
