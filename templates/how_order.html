@@ -47,14 +47,14 @@
   </style>
 </head>
 <body>
-    <div class="logo-container">
-        <a href="{{ url_for('home') }}">
-            <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Logo" style="height: 130px; margin-left: 15px;">
-        </a>
+    <div class="logo-container" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+      <a href="{{ url_for('home') }}">
+        <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Logo" style="height: 90px; margin-left: 15px;">
+      </a>
+      <a href="{{ url_for('home') }}" style="text-align: right; margin-top: 0; margin-bottom: 0; display: inline-block; padding: 10px 24px; background-color: rgb(56, 56, 56); color: #fff; border: none; border-radius: 25px; font-size: 18px; font-weight: bold; text-decoration: none; transition: background 0.2s;">
+        Back to Home
+      </a>
     </div>
-    <div style="text-align: center; margin-bottom: 20px;">
-        <a href="{{ url_for('home') }}" style="display: inline-block; padding: 10px 20px; background-color: #303030; color: #fff; text-decoration: none; border-radius: 50px; font-size: 16px; position: absolute; right: 550px; top: 100px;">Go Back to Home</a>
-    </div></div>
 
   <h1>How to <strong>Order</strong></h1>
 
@@ -88,6 +88,43 @@
     <a href="https://wa.me/+8801533649394" target="_blank" style="color: #25D366;">WhatsApp</a>
     <p>&#128222; +8801533649394</p>
   </div>
+<button id="backToTop" style="position: fixed; bottom: 20px; right: 20px; display: none; padding: 12px 18px; font-size: 14px; background-color: #333; color: #fff; border: none; border-radius: 50px; cursor: pointer; z-index: 1000; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); transition: all 0.3s ease;">
+  ↑ Back to Top
+</button>
+<script>
+  window.addEventListener('scroll', () => {
+    if (window.scrollY > 200) {
+      backToTopButton.style.display = 'block';
+      backToTopButton.style.opacity = '1';
+      backToTopButton.style.transform = 'scale(1)';
+    } else {
+      backToTopButton.style.opacity = '0';
+      backToTopButton.style.transform = 'scale(0.9)';
+      setTimeout(() => {
+        if (window.scrollY <= 200) backToTopButton.style.display = 'none';
+      }, 300);
+    }
+  });
 
+  backToTopButton.addEventListener('click', () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+</script>
+
+<script>
+  const backToTopButton = document.getElementById('backToTop');
+
+  window.addEventListener('scroll', () => {
+    if (window.scrollY > 200) {
+      backToTopButton.style.display = 'block';
+    } else {
+      backToTopButton.style.display = 'none';
+    }
+  });
+
+  backToTopButton.addEventListener('click', () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+</script>
 </body>
 </html>
