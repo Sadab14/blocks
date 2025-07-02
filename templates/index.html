@@ -326,5 +326,20 @@
       popup.style.display = 'none';
     }
   </script>
+  <script>
+    let popupTouchStartY = 0;
+    let popupTouchEndY = 0;
+    const productPopup = document.getElementById('productPopup');
+
+    if (productPopup) {
+      productPopup.addEventListener('touchstart', function(e) {
+        popupTouchStartY = e.changedTouches[0].screenY;
+      });
+      productPopup.addEventListener('touchend', function(e) {
+        popupTouchEndY = e.changedTouches[0].screenY;
+        if (popupTouchEndY > popupTouchStartY + 60) closePopup();
+      });
+    }
+  </script>
 </body>
 </html>
