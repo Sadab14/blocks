@@ -586,73 +586,89 @@
     });
   </script>
   <script>
-    function confirmOrder() {
-        if (!confirm("Are you sure you want to confirm and lock in this order?")) {
-            return; // User cancelled
-        }
-        // Gather invoice data
-        const customerName = document.getElementById('customerName').value || 'N/A';
-        const customerPhone = document.getElementById('customerPhone').value || 'N/A';
-        const customerAddress = document.getElementById('customerAddress').value || 'N/A';
-        const customerFB = document.getElementById('customerFB').value || 'N/A';
-        const customerInsta = document.getElementById('customerInsta').value || 'N/A';
-        const customerWA = document.getElementById('customerWA').value || 'N/A';
-        const deliveryArea = document.getElementById('deliveryArea').value;
-        let deliveryCharge = deliveryArea === 'outside' ? 120 : 60;
+function confirmOrder() {
+    const customerName = document.getElementById('customerName').value.trim();
+    const customerPhone = document.getElementById('customerPhone').value.trim();
+    const customerAddress = document.getElementById('customerAddress').value.trim();
+    const customerFB = document.getElementById('customerFB').value.trim();
+    const customerInsta = document.getElementById('customerInsta').value.trim();
+    const customerWA = document.getElementById('customerWA').value.trim();
 
-        // Gather items
-        const items = invoiceItems.map(item => ({
-            name: item.name,
-            price: item.price,
-            quantity: item.quantity
-        }));
+    // Facebook: must be a valid FB link
+    const isFB = customerFB.startsWith('https://facebook.com') || customerFB.startsWith('https://www.facebook.com');
+    // Instagram: must be a valid IG link or username (at least 3 chars, or link)
+    const isInsta = customerInsta.startsWith('https://instagram.com') || customerInsta.startsWith('https://www.instagram.com') || customerInsta.length >= 3;
+    // WhatsApp: must be a number with at least 11 digits
+    const isWA = /^\d{11}$/.test(customerWA);
 
-        // Prepare data
-        const data = {
-            customerName,
-            customerPhone,
-            customerAddress,
-            customerFB,
-            customerInsta,
-            customerWA,
-            deliveryArea,
-            deliveryCharge,
-            items
-        };
-
-        // Show loading overlay
-        document.getElementById('confirmLoading').style.display = 'flex';
-
-        // Send to backend
-        fetch('/confirm_order', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(data)
-        })
-        .then(res => res.json())
-        .then(response => {
-            // Hide loading overlay
-            document.getElementById('confirmLoading').style.display = 'none';
-
-            if (response.success) {
-                alert('Order confirmed! Our member will send a confirmation text through your given social platform.');
-                closeInvoicePopup();
-            } else {
-                alert('Failed to confirm order. Please try again.');
-            }
-        })
-        .catch(() => {
-            // Hide loading overlay
-            document.getElementById('confirmLoading').style.display = 'none';
-
-            alert('Failed to confirm order. Please try again.');
-        });
+    if (!(isFB || isInsta || isWA)) {
+        alert("Please provide at least one valid social contact:\n- Facebook profile link\n- Instagram username or link\n- WhatsApp number (digits only)");
+        return;
     }
+
+    if (!customerName || !customerPhone || !customerAddress) {
+        alert("Please provide your name, phone number, and delivery address before confirming the order.");
+        return;
+    }
+    if (!/^\d{11}$/.test(customerPhone)) {
+        alert("Phone number not valid");
+        return;
+    }
+    if (!confirm("Are you sure you want to confirm and lock in this order?")) {
+        return;
+    }
+
+    let deliveryCharge = 60;
+    const deliveryAreaSelect = document.getElementById('deliveryArea');
+    if (deliveryAreaSelect && deliveryAreaSelect.value === 'outside') {
+        deliveryCharge = 120;
+    }
+
+    const items = invoiceItems.map(item => ({
+        name: item.name,
+        price: item.price,
+        quantity: item.quantity
+    }));
+
+    const data = {
+        customerName,
+        customerPhone,
+        customerAddress,
+        customerFB,
+        customerInsta,
+        customerWA,
+        deliveryArea: deliveryAreaSelect.value,
+        deliveryCharge,
+        items
+    };
+
+    document.getElementById('confirmLoading').style.display = 'flex';
+
+    fetch('/confirm_order', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(data)
+    })
+    .then(res => res.json())
+    .then(response => {
+        document.getElementById('confirmLoading').style.display = 'none';
+        if (response.success) {
+            alert('Order confirmed! Our member will send a confirmation text through your given social platform.');
+            closeInvoicePopup();
+        } else {
+            alert('Failed to confirm order. Please try again.');
+        }
+    })
+    .catch(() => {
+        document.getElementById('confirmLoading').style.display = 'none';
+        alert('Failed to confirm order. Please try again.');
+    });
+}
+
   </script>
 
-<!-- Add this just before </body> -->
 <div id="confirmLoading" style="display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:2000;background:transparent;align-items:center;justify-content:center;">
   <div style="background:#fff;padding:30px 40px;border-radius:12px;box-shadow:0 2px 12px #0002;display:flex;flex-direction:column;align-items:center;">
     <div class="loader" style="border:6px solid #f3f3f3;border-top:6px solid #333;border-radius:50%;width:40px;height:40px;animation:spin 1s linear infinite;"></div>
