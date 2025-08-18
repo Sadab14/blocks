@@ -290,15 +290,86 @@
     {% endfor %}
   </div>
 
-  <!-- Popup Modal -->
-  <div id="productPopup" class="popup" onclick="closePopup()">
-    <div class="popup-content" onclick="event.stopPropagation()">
-      <img id="popupImage" src="" alt="Product Image" class="popup-image" style="max-width: 100%; height: auto; margin-bottom: 15px;">
-      <h3 id="popupName" class="popup-name" style="margin-bottom: 10px;"></h3>
-      <p id="popupCategory" class="popup-category" style="margin-bottom: 10px;"></p>
-      <p id="popupPrice" class="popup-price" style="margin-bottom: 10px; font-size: larger; font-weight: bold;"></p>
+  <!-- Popup Modal (pre_order style) -->
+  <div id="productPopup" class="popup" onclick="closePopup()" style="display:none;position:fixed;z-index:9999;left:0;top:0;width:100vw;height:100vh;overflow:auto;background:rgba(0,0,0,0.45);justify-content:center;align-items:center;">
+    <div class="popup-content" onclick="event.stopPropagation()" style="background:#fff;margin:auto;padding:20px 12px 12px 12px;border-radius:16px;max-width:480px;width:98vw;text-align:center;position:relative;box-shadow:0 8px 32px rgba(60,60,90,0.13);animation:popupIn 0.18s;">
+      <img id="popupImage" src="" alt="Product Image" class="popup-image" style="width:100%;max-width:440px;height:auto;border-radius:10px;margin-bottom:16px;object-fit:cover;box-shadow:0 2px 12px rgba(60,60,90,0.10);">
+      <h3 id="popupName" class="popup-name" style="font-size:15px;font-weight:700;margin-bottom:8px;color:#22223b;"></h3>
+      <p id="popupCategory" class="popup-category" style="font-size:1rem;color:#4a4e69;margin-bottom:6px;font-weight:500;"></p>
+      <p id="popupPrice" class="popup-price" style="font-size:1.05rem;color:#22223b;font-weight:600;margin-bottom:0;"></p>
     </div>
   </div>
+
+  <style>
+  @keyframes popupIn {
+    from { transform: scale(0.92); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+  }
+  .popup {
+    display: none;
+    position: fixed;
+    z-index: 9999;
+    left: 0;
+    top: 0;
+    width: 100vw;
+    height: 100vh;
+    overflow: auto;
+    background: rgba(0,0,0,0.45);
+    justify-content: center;
+    align-items: center;
+  }
+  .popup-content {
+    background: #fff;
+    margin: auto;
+    padding: 20px 12px 12px 12px;
+    border-radius: 16px;
+    max-width: 480px;
+    width: 98vw;
+    text-align: center;
+    position: relative;
+    box-shadow: 0 8px 32px rgba(60,60,90,0.13);
+    animation: popupIn 0.18s;
+  }
+  .popup-image {
+    width: 100%;
+    max-width: 440px;
+    height: auto;
+    border-radius: 10px;
+    margin-bottom: 16px;
+    object-fit: cover;
+    box-shadow: 0 2px 12px rgba(60,60,90,0.10);
+  }
+  .popup-name {
+    font-size: 15px;
+    font-weight: 700;
+    margin-bottom: 8px;
+    color: #22223b;
+  }
+  .popup-category {
+    font-size: 1rem;
+    color: #4a4e69;
+    margin-bottom: 6px;
+    font-weight: 500;
+  }
+  .popup-price {
+    font-size: 1.05rem;
+    color: #22223b;
+    font-weight: 600;
+    margin-bottom: 0;
+  }
+  @media (max-width: 600px) {
+    .popup-content {
+      max-width: 98vw;
+      padding: 14px 4vw 10px 4vw;
+    }
+    .popup-image {
+      max-width: 90vw;
+    }
+    .popup-name, .popup-category, .popup-price {
+      font-size: 1rem;
+    }
+  }
+  </style>
 
   <script>
     function showPopup(productCard) {
@@ -318,15 +389,19 @@
       if (popupCategory) popupCategory.innerText = category;
       if (popupPrice) popupPrice.innerText = price;
 
-      popup.style.display = 'block';
+      popup.style.display = 'flex';
+
+      // Set currentPopupIndex for swipe
+      const cards = getVisibleProductCards();
+      currentPopupIndex = cards.indexOf(productCard);
     }
 
     function closePopup() {
       const popup = document.getElementById('productPopup');
       popup.style.display = 'none';
     }
-  </script>
-  <script>
+
+    // Swipe down to close
     let popupTouchStartY = 0;
     let popupTouchEndY = 0;
     const productPopup = document.getElementById('productPopup');
@@ -339,6 +414,48 @@
         popupTouchEndY = e.changedTouches[0].screenY;
         if (popupTouchEndY > popupTouchStartY + 60) closePopup();
       });
+    }
+
+    // Swipe left/right to next/prev product in popup (mobile only)
+    let popupTouchStartX = 0;
+    let popupTouchEndX = 0;
+
+    function getVisibleProductCards() {
+      return Array.from(document.querySelectorAll('.product-card'))
+        .filter(card => card.style.display !== 'none');
+    }
+
+    let currentPopupIndex = -1;
+
+    function showPopupByIndex(index) {
+      const cards = getVisibleProductCards();
+      if (cards.length === 0) return;
+      currentPopupIndex = (index + cards.length) % cards.length;
+      showPopup(cards[currentPopupIndex]);
+    }
+
+    if (productPopup) {
+      productPopup.addEventListener('touchstart', function(e) {
+        if (e.touches.length === 1) {
+          popupTouchStartX = e.changedTouches[0].screenX;
+        }
+      });
+      productPopup.addEventListener('touchend', function(e) {
+        if (e.changedTouches.length === 1) {
+          popupTouchEndX = e.changedTouches[0].screenX;
+          handlePopupSwipe();
+        }
+      });
+    }
+
+    function handlePopupSwipe() {
+      const threshold = 40;
+      if (popupTouchEndX < popupTouchStartX - threshold) {
+        showPopupByIndex(currentPopupIndex + 1);
+      }
+      if (popupTouchEndX > popupTouchStartX + threshold) {
+        showPopupByIndex(currentPopupIndex - 1);
+      }
     }
   </script>
 </body>

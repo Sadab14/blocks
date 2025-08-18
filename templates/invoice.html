@@ -681,5 +681,84 @@ function confirmOrder() {
   100% { transform: rotate(360deg);}
 }
 </style>
+
+<!-- Long press on product card to show pre-order style popup -->
+<script>
+document.querySelectorAll('.product-card').forEach(card => {
+    let pressTimer;
+    let popupShown = false;
+
+    card.addEventListener('touchstart', function(e) {
+        pressTimer = setTimeout(() => {
+            showPreOrderStylePopup(card);
+            popupShown = true;
+        }, 500); // 500ms long press
+    });
+
+    card.addEventListener('touchend', function(e) {
+        clearTimeout(pressTimer);
+        if (popupShown) {
+            hidePreOrderStylePopup();
+            popupShown = false;
+        }
+    });
+
+    card.addEventListener('touchmove', function(e) {
+        clearTimeout(pressTimer);
+    });
+});
+
+// Create and show the popup (same style as pre_order)
+function showPreOrderStylePopup(card) {
+    let popup = document.getElementById('preOrderStylePopup');
+    if (!popup) {
+        popup = document.createElement('div');
+        popup.id = 'preOrderStylePopup';
+        popup.style.position = 'fixed';
+        popup.style.top = '0';
+        popup.style.left = '0';
+        popup.style.width = '100vw';
+        popup.style.height = '100vh';
+        popup.style.background = 'rgba(0,0,0,0.45)';
+        popup.style.zIndex = 9999;
+        popup.style.display = 'flex';
+        popup.style.justifyContent = 'center';
+        popup.style.alignItems = 'center';
+        document.body.appendChild(popup);
+    }
+    const name = card.querySelector('.product-name').innerText;
+    const category = card.querySelector('.product-category').innerText;
+    const price = card.querySelector('.product-price').innerText;
+    const img = card.querySelector('.product-image').src;
+
+    popup.innerHTML = `
+      <div style="background:#fff;margin:auto;padding:20px 12px 12px 12px;border-radius:16px;max-width:480px;width:98vw;text-align:center;position:relative;box-shadow:0 8px 32px rgba(60,60,90,0.13);animation:popupIn 0.18s;">
+        <img src="${img}" alt="${name}" style="width:100%;max-width:440px;height:auto;border-radius:10px;margin-bottom:16px;object-fit:cover;box-shadow:0 2px 12px rgba(60,60,90,0.10);">
+        <h3 style="font-size:15px;font-weight:700;margin-bottom:8px;color:#22223b;">${name}</h3>
+        <p style="font-size:1rem;color:#4a4e69;margin-bottom:6px;font-weight:500;">${category}</p>
+        <p style="font-size:1.05rem;color:#22223b;font-weight:600;margin-bottom:0;">${price}</p>
+      </div>
+    `;
+    popup.style.display = 'flex';
+}
+
+function hidePreOrderStylePopup() {
+    const popup = document.getElementById('preOrderStylePopup');
+    if (popup) popup.style.display = 'none';
+}
+
+// Add animation keyframes if not present
+if (!document.getElementById('popupInKeyframes')) {
+    const style = document.createElement('style');
+    style.id = 'popupInKeyframes';
+    style.innerHTML = `
+      @keyframes popupIn {
+        from { transform: scale(0.92); opacity: 0; }
+        to { transform: scale(1); opacity: 1; }
+      }
+    `;
+    document.head.appendChild(style);
+}
+</script>
 </body>
 </html>
