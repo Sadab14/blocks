@@ -1,5 +1,14 @@
-from flask import Flask, render_template
+import os
+import uuid
+import requests
+from flask import Flask, render_template, request, jsonify
 import pandas as pd
+from dotenv import load_dotenv
+
+load_dotenv()
+
+WEBHOOK_URL = os.environ.get('GOOGLE_SHEETS_WEBHOOK')   # set in Render / .env
+WEBHOOK_SECRET = os.environ.get('GOOGLE_SHEETS_SECRET') # set in Render / .env
 
 app = Flask(__name__)
 
@@ -67,35 +76,48 @@ from email.mime.text import MIMEText
 @app.route('/confirm_order', methods=['POST'])
 def confirm_order():
     data = request.get_json()
-    total = sum(item['price'] * item['quantity'] for item in data['items']) + int(data['deliveryCharge'])
-    subject = "New Order from BLOCKS"
-    body = f"""
-    Name: {data['customerName']}
-    Phone: {data['customerPhone']}
-    Address: {data['customerAddress']}
-    Facebook: {data.get('customerFB', '')}
-    Instagram: {data.get('customerInsta', '')}
-    WhatsApp: {data.get('customerWA', '')}
-    Delivery Area: {data['deliveryArea']}
-    Delivery Charge: {data['deliveryCharge']}
-    Items:
-    """
-    for item in data['items']:
-        body += f"\n- {item['name']} x{item['quantity']} (৳{item['price']})"
-    body += f"\n\nTotal: ৳{total}"
+    if not data:
+        return jsonify({'success': False, 'error': 'No JSON body'}), 400
+
+    # compute total defensively
     try:
-        msg = MIMEText(body)
-        msg['Subject'] = subject
-        msg['From'] = 'sadabshakib14@gmail.com'
-        msg['To'] = 'blocks.snapthat@gmail.com'
-        with smtplib.SMTP('smtp.gmail.com', 587) as server:
-            server.starttls()
-            server.login('sadabshakib14@gmail.com', 'gwko ngdx fgze aqti')
-            server.send_message(msg)
-        return jsonify({'success': True})
+        items = data.get('items', [])
+        total = sum(float(item.get('price', 0)) * int(item.get('quantity', 0)) for item in items)
+        delivery_charge = float(data.get('deliveryCharge', 0) or 0)
+        total += delivery_charge
+    except Exception:
+        total = data.get('total', 0)
+
+    order_id = data.get('orderId') or str(uuid.uuid4())
+
+    # Format items as a list, one per line (just product name)
+    items_str = "\n".join([f"{item.get('name', '')} x{item.get('quantity', 1)} (৳{item.get('price', 0)})" for item in items])
+
+    payload = {
+        "secret": WEBHOOK_SECRET,
+        "orderId": order_id,
+        "customerName": data.get('customerName'),
+        "customerPhone": data.get('customerPhone'),
+        "customerAddress": data.get('customerAddress'),
+        "deliveryArea": data.get('deliveryArea'),
+        "deliveryCharge": data.get('deliveryCharge'),
+        "customerFB": data.get('customerFB'),
+        "customerInsta": data.get('customerInsta'),
+        "customerWA": data.get('customerWA'),
+        "items": items_str,  # Each item on its own line
+        "total": total
+    }
+
+    try:
+        resp = requests.post(WEBHOOK_URL, json=payload, timeout=10)
+        if resp.ok:
+            return jsonify({'success': True})
+        else:
+            print("GSheet webhook failed:", resp.status_code, resp.text)
+            return jsonify({'success': False, 'error': 'Webhook responded ' + str(resp.status_code)}), 500
     except Exception as e:
-        print(e)
-        return jsonify({'success': False})
+        print("Exception sending to GSheet webhook:", e)
+        return jsonify({'success': False, 'error': str(e)}), 500
 
 app = app
 
