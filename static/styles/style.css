@@ -498,7 +498,6 @@ textarea.invoice-input {
     display: flex;
     justify-content: space-between;
     margin-bottom: 10px;
-    padding: 8px 0;
     font-size: 15px;
 }
 
@@ -635,7 +634,7 @@ textarea.invoice-input {
     
     .social-buttons {
         flex-wrap: wrap;
-        justify-content: center;
+        justify-content: right;
     }
 }
 

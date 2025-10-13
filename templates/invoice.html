@@ -106,7 +106,10 @@
     window.scrollTo({ top: 0, behavior: 'smooth' });
   });
 </script>
-
+<div class="select-message" style="text-align:center; font-size:1.15em; color:#22223b; margin: 28px 0 18px 0; font-weight:500;">
+  Select items to add to cart (Click on a product to add, then adjust quantity)
+  Then click on "View Invoice" to proceed.
+</div>
     <!-- Products Grid -->
     <div id="productsGrid" class="products-grid">
         {% for product in products %}
@@ -679,5 +682,29 @@ function confirmOrder() {
   100% { transform: rotate(360deg);}
 }
 </style>
+
+<!-- Add this floating View Invoice button after your Back to Top button, near the end of invoice.html -->
+<button id="floatingInvoiceBtn" onclick="viewInvoice()" title="View Invoice"
+    style="position: fixed; bottom: 80px; right: 20px; display: none; padding: 8px 16px; font-size: 14px; background-color: #333; color: #fff; border: none; border-radius: 30px; cursor: pointer; z-index: 1000; box-shadow: 0 2px 4px rgba(0,0,0,0.12); transition: all 0.3s ease; font-weight: 500;">
+    View Invoice
+</button>
+
+<script>
+  // Show/hide floating View Invoice button on scroll
+  window.addEventListener('scroll', () => {
+    const floatingInvoiceBtn = document.getElementById('floatingInvoiceBtn');
+    if (window.scrollY > 200) {
+      floatingInvoiceBtn.style.display = 'block';
+      floatingInvoiceBtn.style.opacity = '1';
+      floatingInvoiceBtn.style.transform = 'scale(1)';
+    } else {
+      floatingInvoiceBtn.style.opacity = '0';
+      floatingInvoiceBtn.style.transform = 'scale(0.9)';
+      setTimeout(() => {
+        if (window.scrollY <= 200) floatingInvoiceBtn.style.display = 'none';
+      }, 300);
+    }
+  });
+</script>
 </body>
 </html>

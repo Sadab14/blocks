@@ -6,7 +6,7 @@
     <title>BLOCKS</title>
     <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/favicon.png') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='styles/style.css') }}">
-    <a href="{{ url_for('how_order') }}" class="how-order-link" style="display: block; font-family: Verdana, Geneva, Tahoma, sans-serif; text-align: center; animation: blink 1s infinite;">***How to Order***</a>
+    <a href="{{ url_for('how_order') }}" class="how-order-link" style="display: block; font-family: Verdana, Geneva, Tahoma, sans-serif; text-align: center; animation: blink 1s infinite; color: #000; background: #fff; text-decoration: none;">***How to Order***</a>
     <style>
       @keyframes blink {
         50%, 100% { opacity: 1; }
@@ -98,13 +98,17 @@
       <a 
         href="{{ url_for('invoice') }}" 
         class="create-order-button modern-button" 
-        style="padding: 10px 20px; font-size: 16px; background-color: rgb(56, 56, 56); font-weight: normal; color: #ffffff; text-decoration: none;">
-        Create Order
+        style="padding: 10px 20px; font-size: 16px; background-color: rgb(56, 56, 56); font-weight: normal; color: #ffffff; text-decoration: none; display: inline-flex; align-items: center; justify-content: center;"
+        title="Create Order">
+        <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" fill="none" viewBox="0 0 24 24" style="margin-right: 0;">
+          <path d="M7 20a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm10 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4zM7.16 16h9.68a2 2 0 0 0 1.97-1.68l1.2-6A2 2 0 0 0 18.05 6H6.21l-.94-4H1v2h2l3.6 14.59A2 2 0 0 0 8.5 20h9v-2h-9l-.34-2z" fill="#fff"/>
+        </svg>
       </a>
       <a 
         href="{{ url_for('pre_order') }}" 
         class="create-order-button modern-button" 
-        style="padding: 10px 20px; font-size: 16px; background-color: rgb(56, 56, 56); font-weight: normal; color: #ffffff; text-decoration: none; margin-left: 10px;">
+        style="padding: 10px 20px; font-size: 16px; background-color: rgb(56, 56, 56); font-weight: normal; color: #ffffff; text-decoration: none; margin-left: 10px;"
+        title="Pre-Order">
         Pre-Order
       </a>
     </div>
