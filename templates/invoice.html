@@ -160,8 +160,8 @@
                     <div style="margin-top:10px;">
                         <label><strong>Delivery Area:</strong></label>
                         <select id="deliveryArea" class="invoice-input" style="width:auto;display:inline-block;margin-left:10px;">
-                            <option value="inside">Inside Dhaka (+৳60)</option>
-                            <option value="outside">Outside Dhaka (+৳120)</option>
+                            <option value="inside">Inside Dhaka (+৳70)</option>
+                            <option value="outside">Outside Dhaka (+৳130)</option>
                         </select>
                     </div>
                     <div style="margin-top:10px;">
@@ -330,11 +330,11 @@
 
             // Add delivery charge based on selection
             const deliveryArea = document.getElementById('deliveryArea');
-            let deliveryCharge = 60;
-            let deliveryText = "Inside Dhaka (+৳60)";
+            let deliveryCharge = 70;
+            let deliveryText = "Inside Dhaka (+৳70)";
             if (deliveryArea && deliveryArea.value === 'outside') {
-                deliveryCharge = 120;
-                deliveryText = "Outside Dhaka (+৳120)";
+                deliveryCharge = 130;
+                deliveryText = "Outside Dhaka (+৳130)";
             }
             total += deliveryCharge;
 
@@ -477,7 +477,7 @@
                 <p><strong>Name:</strong> ${customerName}</p>
                 <p><strong>Phone:</strong> ${customerPhone}</p>
                 <p><strong>Address:</strong> ${customerAddress}</p>
-                <p><strong>Delivery Area:</strong> ${deliveryArea === 'outside' ? 'Outside Dhaka (+৳120)' : 'Inside Dhaka (+৳60)'}</p>
+                <p><strong>Delivery Area:</strong> ${deliveryArea === 'outside' ? 'Outside Dhaka (+৳130)' : 'Inside Dhaka (+৳70)'}</p>
                 </div>
                 ${popupContent.querySelector('.invoice-body').outerHTML
                     .replace(/<div class="invoice-customer">[\s\S]*?<\/div>/, '')}
@@ -619,10 +619,10 @@ function confirmOrder() {
         return;
     }
 
-    let deliveryCharge = 60;
+    let deliveryCharge = 70;
     const deliveryAreaSelect = document.getElementById('deliveryArea');
     if (deliveryAreaSelect && deliveryAreaSelect.value === 'outside') {
-        deliveryCharge = 120;
+        deliveryCharge = 130;
     }
 
     const items = invoiceItems.map(item => ({
