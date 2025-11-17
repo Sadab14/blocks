@@ -12,6 +12,7 @@ WEBHOOK_SECRET = os.environ.get('GOOGLE_SHEETS_SECRET') # set in Render / .env
 
 app = Flask(__name__)
 
+
 @app.route('/')
 def home():
     df = pd.read_excel('data/stock.xlsx')
@@ -43,31 +44,6 @@ def invoice():
 def how_order():
     return render_template('how_order.html')
 
-@app.route('/pre_order')
-def pre_order():
-    df = pd.read_excel('data/pre_order.xlsx')
-    if 'Category' in df.columns:
-        # Split and flatten all categories
-        categories = set()
-        for cats in df['Category'].dropna():
-            for cat in [c.strip() for c in cats.split(',')]:
-                categories.add(cat)
-        categories = sorted(categories)
-    else:
-        categories = []
-    return render_template('pre_order.html', categories=categories, products=None, selected_category=None)
-
-@app.route('/pre_order/<category>')
-def pre_order_category(category):
-    df = pd.read_excel('data/pre_order.xlsx')
-    if 'Category' in df.columns:
-        categories = df['Category'].drop_duplicates().tolist()
-        # Show products where the category is in the comma-separated list
-        products = df[df['Category'].str.contains(rf'\b{category}\b', case=False, na=False)].to_dict(orient='records')
-    else:
-        categories = []
-        products = []
-    return render_template('pre_order.html', categories=categories, products=products, selected_category=category)
 
 from flask import request, jsonify
 import smtplib

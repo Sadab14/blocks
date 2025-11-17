@@ -105,10 +105,11 @@
         </svg>
       </a>
       <a 
-        href="{{ url_for('pre_order') }}" 
+        href="https://blocks-preorder.onrender.com/"
         class="create-order-button modern-button" 
         style="padding: 10px 20px; font-size: 16px; background-color: rgb(56, 56, 56); font-weight: normal; color: #ffffff; text-decoration: none; margin-left: 10px;"
-        title="Pre-Order">
+        title="Pre-Order"
+        target="_blank" rel="noopener noreferrer">
         Pre-Order
       </a>
     </div>
@@ -463,5 +464,26 @@
       }
     }
   </script>
+
+  <!-- Floating left-bottom link button (place before closing </body>) -->
+<a id="floatingLinkBtn" href="https://blocks-hall-of-fame.onrender.com" target="_blank" rel="noopener noreferrer" aria-label="Open external link"
+   style="position:fixed; left:20px; bottom:20px; z-index:1200; width:110px; height:110px; display:inline-block; cursor:pointer; background:transparent; border:0; padding:0; margin:0;">
+  <img src="{{ url_for('static', filename='images/bhf.png') }}" alt="Open link" style="width:100%; height:100%; object-fit:contain; display:block; pointer-events:none;">
+</a>
+
+<style>
+  /* Floating left-bottom button - image-only, no border */
+  #floatingLinkBtn{
+    transition: transform .16s ease, opacity .16s ease;
+    -webkit-tap-highlight-color: transparent;
+  }
+  #floatingLinkBtn:hover{
+    transform: translateY(-6px) scale(1.04);
+  }
+  /* Make slightly smaller on very small screens */
+  @media (max-width: 500px){
+    #floatingLinkBtn { width:70px; height:70px; left:12px; bottom:14px; background:rgba(255,255,255,0.1); border:50%; backdrop-filter:blur(5px); }
+  }
+</style>
 </body>
 </html>
