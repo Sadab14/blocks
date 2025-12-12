@@ -224,28 +224,27 @@
             const quantityControls = productCard.querySelector('.quantity-controls');
             const quantityElement = productCard.querySelector('.quantity');
             
-            // Check if product is already in invoice
             const existingItemIndex = invoiceItems.findIndex(item => item.name === productName);
             
             if (existingItemIndex >= 0) {
-                // Increase quantity if possible
                 if (invoiceItems[existingItemIndex].quantity < productStock) {
                     invoiceItems[existingItemIndex].quantity += 1;
+                    // Add new keyring entry for the new quantity (default: false)
+                    invoiceItems[existingItemIndex].keyrings.push(false);
                     quantityElement.innerText = invoiceItems[existingItemIndex].quantity;
                 } else {
                     alert('Cannot add more than available stock.');
                 }
             } else {
-                // Add new item if stock is available
                 if (productStock > 0) {
                     invoiceItems.push({
                         name: productName,
                         price: productPrice,
                         quantity: 1,
-                        stock: productStock
+                        stock: productStock,
+                        keyrings: [false]  // Array of keyring booleans, one per unit
                     });
                     
-                    // Show quantity controls
                     quantityControls.style.display = 'flex';
                     productCard.classList.add('selected');
                 } else {
@@ -264,23 +263,31 @@
             const productStock = parseInt(productCard.getAttribute('data-stock'));
             const newQuantity = currentQuantity + change;
             
-            if (newQuantity > 0 && newQuantity <= productStock) {
-                quantityElement.innerText = newQuantity;
-                
-                // Update invoiceItems array
-                const itemIndex = invoiceItems.findIndex(item => item.name === productName);
-                if (itemIndex >= 0) {
-                    invoiceItems[itemIndex].quantity = newQuantity;
-                }
-            } else if (newQuantity === 0) {
-                // Remove item from invoice
-                removeFromInvoice(productCard);
-                return;
-            } else {
-                alert('Cannot exceed available stock.');
+            const itemIndex = invoiceItems.findIndex(item => item.name === productName);
+    if (itemIndex < 0) return;
+    
+    if (newQuantity > 0 && newQuantity <= productStock) {
+        if (change > 0) {
+            // Adding more units
+            for (let i = 0; i < change; i++) {
+                invoiceItems[itemIndex].keyrings.push(false);
             }
-            
-            updateInvoiceButton();
+        } else {
+            // Removing units from the end
+            for (let i = 0; i < Math.abs(change); i++) {
+                invoiceItems[itemIndex].keyrings.pop();
+            }
+        }
+        invoiceItems[itemIndex].quantity = newQuantity;
+        quantityElement.innerText = newQuantity;
+    } else if (newQuantity === 0) {
+        removeFromInvoice(productCard);
+        return;
+    } else {
+        alert('Cannot exceed available stock.');
+    }
+    
+    updateInvoiceButton();
         }
         
         function removeFromInvoice(productCard) {
@@ -312,25 +319,71 @@
             const invoiceItemsContainer = document.getElementById('invoiceItems');
             invoiceItemsContainer.innerHTML = '';
 
-            let total = 0;
+            let subtotal = 0;
             let totalQuantity = 0;
-            invoiceItems.forEach(item => {
-                const itemTotal = item.price * item.quantity;
-                total += itemTotal;
-                totalQuantity += item.quantity; // Add this line
+            let keyringCharge = 0;
 
+            invoiceItems.forEach((item, itemIdx) => {
+                const itemTotal = item.price * item.quantity;
+                subtotal += itemTotal;
+                totalQuantity += item.quantity;
+
+                // Count keyrings for this item
+                const keyringCount = item.keyrings.filter(kr => kr).length;
+                keyringCharge += keyringCount * 50;
+
+                // Build per-unit keyring controls HTML (no outer positioning here)
+                let perUnitHtml = '';
+                item.keyrings.forEach((hasKeyring, unitIdx) => {
+                    perUnitHtml += `<label style="margin-right:12px; cursor:pointer;">
+                        <input type="checkbox" onchange="toggleKeyringForUnit(${itemIdx}, ${unitIdx})" ${hasKeyring ? 'checked' : ''}>
+                        &nbsp;Unit ${unitIdx + 1}
+                    </label>`;
+                });
+
+                // Create grid-based item element so alignment matches header
                 const itemElement = document.createElement('div');
                 itemElement.className = 'invoice-item';
-                itemElement.innerHTML = `
-                    <div class="invoice-item-name">${item.name}</div>
-                    <div class="invoice-item-quantity">${item.quantity}</div>
-                    <div class="invoice-item-price">৳${item.price}</div>
-                    <div class="invoice-item-total">৳${itemTotal}</div>
-                `;
+                itemElement.style = "display: grid; grid-template-columns: 2fr 0.9fr 0.9fr 0.9fr; gap:12px; align-items:center; padding:12px 0; border-bottom:1px solid #eee;";
+
+                // Main row: Product | Qty | Price | Total
+                const productCell = document.createElement('div');
+                productCell.style = "white-space:nowrap; overflow:hidden; text-overflow:ellipsis;";
+                productCell.textContent = item.name;
+
+                const qtyCell = document.createElement('div');
+                qtyCell.style = "text-align:center;";
+                qtyCell.textContent = item.quantity;
+
+                const priceCell = document.createElement('div');
+                priceCell.style = "text-align:right;";
+                priceCell.textContent = `৳${item.price}`;
+
+                const totalCell = document.createElement('div');
+                totalCell.style = "text-align:right; font-weight:600;";
+                totalCell.textContent = `৳${itemTotal}`;
+
+                // Append the cells
+                itemElement.appendChild(productCell);
+                itemElement.appendChild(qtyCell);
+                itemElement.appendChild(priceCell);
+                itemElement.appendChild(totalCell);
+
+                // Keyring row: span full width under the 4 columns
+                if (item.keyrings && item.keyrings.length) {
+                    const keyringRow = document.createElement('div');
+                    keyringRow.style = "grid-column: 1 / -1; margin-top:8px; font-size:0.95em;";
+                    keyringRow.innerHTML = `<strong style="margin-right:8px;">Keyrings:</strong> ${perUnitHtml}`;
+                    itemElement.appendChild(keyringRow);
+                }
+
                 invoiceItemsContainer.appendChild(itemElement);
             });
 
-            // Add delivery charge based on selection
+            // Compute total (subtotal + keyrings + delivery)
+            let total = subtotal + keyringCharge;
+
+            // Add delivery charge
             const deliveryArea = document.getElementById('deliveryArea');
             let deliveryCharge = 70;
             let deliveryText = "Inside Dhaka (+৳70)";
@@ -340,7 +393,18 @@
             }
             total += deliveryCharge;
 
-            // Add delivery charge line to invoice
+            // Update or create keyring charge line
+            let keyringLine = document.getElementById('invoiceKeyringCharge');
+            if (!keyringLine) {
+                keyringLine = document.createElement('div');
+                keyringLine.id = 'invoiceKeyringCharge';
+                keyringLine.style = "margin-top:8px;text-align:right;font-weight:bold;";
+                document.querySelector('.invoice-summary').insertBefore(keyringLine, document.getElementById('invoiceGrandTotal').parentElement);
+            }
+            keyringLine.innerHTML = keyringCharge > 0 ? `Keyring Charge: <span style="font-weight:normal">৳${keyringCharge}</span>` : '';
+            keyringLine.style.display = keyringCharge > 0 ? 'block' : 'none';
+
+            // Update delivery charge line
             let deliveryLine = document.getElementById('invoiceDeliveryCharge');
             if (!deliveryLine) {
                 deliveryLine = document.createElement('div');
@@ -350,7 +414,7 @@
             }
             deliveryLine.innerHTML = `Delivery Charge: <span style="font-weight:normal">${deliveryText}</span>`;
 
-            // Add or update total quantity line in invoice
+            // Update total quantity line
             let quantityLine = document.getElementById('invoiceTotalQuantity');
             if (!quantityLine) {
                 quantityLine = document.createElement('div');
@@ -362,6 +426,12 @@
 
             document.getElementById('invoiceGrandTotal').textContent = `৳${total}`;
             document.getElementById('invoicePopup').style.display = 'block';
+        }
+        
+        // Toggle keyring for specific unit
+        function toggleKeyringForUnit(itemIdx, unitIdx) {
+            invoiceItems[itemIdx].keyrings[unitIdx] = !invoiceItems[itemIdx].keyrings[unitIdx];
+            viewInvoice();
         }
         
         function closeInvoicePopup() {
@@ -597,11 +667,8 @@ function confirmOrder() {
     const customerInsta = document.getElementById('customerInsta').value.trim();
     const customerWA = document.getElementById('customerWA').value.trim();
 
-    // Facebook: must be a valid FB link
     const isFB = customerFB.startsWith('https://facebook.com') || customerFB.startsWith('https://www.facebook.com');
-    // Instagram: must be a valid IG link or username (at least 3 chars, or link)
     const isInsta = customerInsta.startsWith('https://instagram.com') || customerInsta.startsWith('https://www.instagram.com') || customerInsta.length >= 3;
-    // WhatsApp: must be a number with at least 11 digits
     const isWA = /^\d{11}$/.test(customerWA);
 
     if (!(isFB || isInsta || isWA)) {
@@ -630,8 +697,14 @@ function confirmOrder() {
     const items = invoiceItems.map(item => ({
         name: item.name,
         price: item.price,
-        quantity: item.quantity
+        quantity: item.quantity,
+        keyrings: item.keyrings  // Send array of keyring selections
     }));
+
+    // Count total keyrings
+    const keyringCharge = invoiceItems.reduce((sum, item) => {
+        return sum + (item.keyrings.filter(kr => kr).length * 50);
+    }, 0);
 
     const data = {
         customerName,
@@ -642,6 +715,7 @@ function confirmOrder() {
         customerWA,
         deliveryArea: deliveryAreaSelect.value,
         deliveryCharge,
+        keyringCharge,
         items
     };
 

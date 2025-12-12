@@ -301,12 +301,13 @@ h1 {
     margin-bottom: 20px;
 }
 
-.invoice-item {
-    display: grid;
-    grid-template-columns: 2fr 1fr 1fr 1fr;
-    padding: 8px 0;
-    border-bottom: 1px solid var(--light-gray);
-    gap: 10px;
+.invoice-items-header {
+  display: grid;
+  grid-template-columns: 2fr 0.9fr 0.9fr 0.9fr;
+  gap: 12px;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid #ddd;
 }
 
 .invoice-total {

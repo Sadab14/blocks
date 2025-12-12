@@ -60,14 +60,28 @@ def confirm_order():
         items = data.get('items', [])
         total = sum(float(item.get('price', 0)) * int(item.get('quantity', 0)) for item in items)
         delivery_charge = float(data.get('deliveryCharge', 0) or 0)
-        total += delivery_charge
+        keyring_charge = float(data.get('keyringCharge', 0) or 0)  # Add keyring charge
+        total += delivery_charge + keyring_charge  # Include keyring in total
     except Exception:
         total = data.get('total', 0)
 
     order_id = data.get('orderId') or str(uuid.uuid4())
 
-    # Format items as a list, one per line (just product name)
-    items_str = "\n".join([f"{item.get('name', '')} x{item.get('quantity', 1)} (৳{item.get('price', 0)})" for item in items])
+    # Format items as a list, one per line with keyring info
+    items_str = "\n".join([
+        f"{item.get('name', '')} x{item.get('quantity', 1)} (৳{item.get('price', 0)})" + 
+        (f" + Keyring" if item.get('keyring', False) else "")
+        for item in items
+    ])
+
+    # Create keyring list (show which units have keyrings)
+    keyrings_str = ""
+    for item in items:
+        if 'keyrings' in item and item['keyrings']:
+            keyring_units = [f"Unit {i+1}" for i, has_kr in enumerate(item['keyrings']) if has_kr]
+            if keyring_units:
+                keyrings_str += f"{item['name']}: {', '.join(keyring_units)}\n"
+    keyrings_str = keyrings_str.strip()
 
     payload = {
         "secret": WEBHOOK_SECRET,
@@ -80,8 +94,10 @@ def confirm_order():
         "customerFB": data.get('customerFB'),
         "customerInsta": data.get('customerInsta'),
         "customerWA": data.get('customerWA'),
-        "items": items_str,  # Each item on its own line
-        "total": total
+        "items": items_str,
+        "total": total,
+        "keyringCharge": data.get('keyringCharge', 0),  # Add keyring charge field
+        "keyringItems": keyrings_str,  # New column for keyring items
     }
 
     try:
