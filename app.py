@@ -1,7 +1,7 @@
 import os
 import uuid
 import requests
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template, request, jsonify, send_from_directory
 import pandas as pd
 from dotenv import load_dotenv
 
@@ -44,6 +44,13 @@ def invoice():
 def how_order():
     return render_template('how_order.html')
 
+@app.route("/sitemap.xml")
+def sitemap():
+    return send_from_directory("static", "sitemap.xml")
+
+@app.route("/robots.txt")
+def robots():
+    return send_from_directory("static", "robots.txt")
 
 from flask import request, jsonify
 import smtplib
