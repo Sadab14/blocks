@@ -290,7 +290,7 @@
       <div class="product-info">
         <h3 class="product-name">{{ product['Product'] }}</h3>
         <p class="product-category">{{ product['Category'] }}</p>
-        <p class="product-price">৳{{ product['Price'] }}</p>
+        <p class="product-price">৳{{ product['Price'] | int }}</p>
       </div>
     </div>
     {% endif %}

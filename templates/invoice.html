@@ -125,11 +125,11 @@
             {% else %}
             <img src="{{ url_for('static', filename='images/placeholder.jpg') }}" class="product-image" alt="Placeholder">
             {% endif %}
-            <div class="stock-badge in-stock">Stock: {{ product['Stock'] }}</div>
+            <div class="stock-badge in-stock">Stock: {{ product['Stock'] | int }}</div>
             <div class="product-info">
                 <h3 class="product-name">{{ product['Product'] }}</h3>
                 <p class="product-category">{{ product['Category'] }}</p>
-                <p class="product-price">৳{{ product['Price'] }}</p>
+                <p class="product-price">৳{{ product['Price'] | int }}</p>
             </div>
             <div class="quantity-controls" style="display: none;">
                 <button class="quantity-btn minus" onclick="event.stopPropagation(); changeQuantity(this, -1)">-</button>
@@ -224,6 +224,7 @@
             const productStock = parseInt(productCard.getAttribute('data-stock'));
             const quantityControls = productCard.querySelector('.quantity-controls');
             const quantityElement = productCard.querySelector('.quantity');
+            const productImage = productCard.querySelector('.product-image').src;
             
             const existingItemIndex = invoiceItems.findIndex(item => item.name === productName);
             
@@ -243,6 +244,7 @@
                         price: productPrice,
                         quantity: 1,
                         stock: productStock,
+                        image: productImage,  // Store product image URL
                         keyrings: [false]  // Array of keyring booleans, one per unit
                     });
                     
@@ -347,10 +349,18 @@
                 itemElement.className = 'invoice-item';
                 itemElement.style = "display: grid; grid-template-columns: 2fr 0.9fr 0.9fr 0.9fr; gap:12px; align-items:center; padding:12px 0; border-bottom:1px solid #eee;";
 
-                // Main row: Product | Qty | Price | Total
+                // Main row: Product (with image) | Qty | Price | Total
                 const productCell = document.createElement('div');
-                productCell.style = "white-space:nowrap; overflow:hidden; text-overflow:ellipsis;";
-                productCell.textContent = item.name;
+                productCell.style = "display: flex; align-items: center; gap: 8px; white-space: nowrap; overflow: hidden;";
+                const productImg = document.createElement('img');
+                productImg.src = item.image;
+                productImg.style = "width: 40px; height: 40px; object-fit: cover; border-radius: 4px;";
+                productImg.alt = item.name;
+                const productName = document.createElement('span');
+                productName.textContent = item.name;
+                productName.style = "overflow: hidden; text-overflow: ellipsis;";
+                productCell.appendChild(productImg);
+                productCell.appendChild(productName);
 
                 const qtyCell = document.createElement('div');
                 qtyCell.style = "text-align:center;";
