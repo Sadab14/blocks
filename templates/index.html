@@ -153,31 +153,67 @@
     >
 
   </div>
-<!-- Back to Top Button -->
-<button id="backToTop" style="position: fixed; bottom: 20px; right: 20px; display: none; padding: 12px 18px; font-size: 22px; background-color: #333; color: #fff; border: none; border-radius: 50px; cursor: pointer; z-index: 1000; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); transition: all 0.3s ease; line-height: 1;">
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" style="vertical-align:middle;">
+<!-- Back to Top Button with Progress -->
+<div id="backToTopContainer" style="position: fixed; bottom: 20px; right: 20px; display: none; z-index: 1000;">
+  <button id="backToTop" style="position: relative; width: 56px; height: 56px; padding: 0; font-size: 0; background-color: #333; color: #fff; border: none; border-radius: 50%; cursor: pointer; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); transition: all 0.3s ease; display: flex; align-items: center; justify-content: center;">
+    <!-- Circular Progress Background -->
+    <svg style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;" viewBox="0 0 56 56">
+      <circle cx="28" cy="28" r="26" fill="none" stroke="#444" stroke-width="4.3" />
+      <circle id="progressCircle" cx="28" cy="28" r="26" fill="none" stroke="#ffffff" stroke-width="4.3" stroke-dasharray="163.36" stroke-dashoffset="163.36" style="transform: rotate(-90deg); transform-origin: 28px 28px; transition: stroke-dashoffset 0.1s linear;" />
+    </svg>
+    <!-- Arrow Icon -->
+    <svg id="backToTopArrow" width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" style="position: relative; z-index: 1;">
       <polyline points="8,14 12,10 16,14" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
     </svg>
-</button>
+  </button>
+</div>
+
 <script>
+  const backToTopContainer = document.getElementById('backToTopContainer');
   const backToTopButton = document.getElementById('backToTop');
+  const progressCircle = document.getElementById('progressCircle');
+  const circumference = 2 * Math.PI * 26; // radius = 26
 
   window.addEventListener('scroll', () => {
+    const scrollHeight = document.documentElement.scrollHeight - window.innerHeight;
+    const scrolled = window.scrollY;
+    const scrollPercent = scrollHeight > 0 ? (scrolled / scrollHeight) * 100 : 0;
+
+    // Show/hide button based on scroll position
     if (window.scrollY > 200) {
-      backToTopButton.style.display = 'block';
-      backToTopButton.style.opacity = '1';
-      backToTopButton.style.transform = 'scale(1)';
+      backToTopContainer.style.display = 'block';
+      backToTopContainer.style.opacity = '1';
+      backToTopContainer.style.transform = 'scale(1)';
     } else {
-      backToTopButton.style.opacity = '0';
-      backToTopButton.style.transform = 'scale(0.9)';
+      backToTopContainer.style.opacity = '0';
+      backToTopContainer.style.transform = 'scale(0.9)';
       setTimeout(() => {
-        if (window.scrollY <= 200) backToTopButton.style.display = 'none';
+        if (window.scrollY <= 200) backToTopContainer.style.display = 'none';
       }, 300);
     }
+
+    // Update progress circle
+    const offset = circumference - (scrollPercent / 100) * circumference;
+    progressCircle.style.strokeDashoffset = offset;
   });
 
   backToTopButton.addEventListener('click', () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+
+  // Hover effect
+  const arrowIcon = document.getElementById('backToTopArrow');
+  
+  backToTopButton.addEventListener('mouseover', () => {
+    backToTopButton.style.backgroundColor = '#fff';
+    backToTopButton.style.boxShadow = '0 6px 12px rgba(76, 175, 80, 0.4)';
+    arrowIcon.querySelector('polyline').style.stroke = '#333';
+  });
+
+  backToTopButton.addEventListener('mouseout', () => {
+    backToTopButton.style.backgroundColor = '#333';
+    backToTopButton.style.boxShadow = '0 4px 6px rgba(0, 0, 0, 0.1)';
+    arrowIcon.querySelector('polyline').style.stroke = '#fff';
   });
 </script>
 <!-- Slideshow Section -->
