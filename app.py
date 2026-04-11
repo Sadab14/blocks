@@ -21,6 +21,7 @@ SECRET_KEY = os.environ.get('SECRET_KEY')
 
 # New env vars for Sheets and Cloudinary
 GOOGLE_SHEETS_CREDENTIALS_FILE = os.environ.get('GOOGLE_SHEETS_CREDENTIALS_FILE')
+GOOGLE_SHEETS_CREDENTIALS = os.environ.get('GOOGLE_SHEETS_CREDENTIALS')
 GOOGLE_SHEETS_PRODUCTS_SHEET_ID = os.environ.get('GOOGLE_SHEETS_PRODUCTS_SHEET_ID')
 CLOUDINARY_CLOUD_NAME = os.environ.get('CLOUDINARY_CLOUD_NAME')
 CLOUDINARY_API_KEY = os.environ.get('CLOUDINARY_API_KEY')
@@ -43,8 +44,31 @@ def load_user(user_id):
     return User(user_id)
 
 # Google Sheets setup
-with open(os.environ.get('GOOGLE_SHEETS_CREDENTIALS_FILE'), 'r') as f:
-    creds_dict = json.load(f)
+
+def load_google_sheets_credentials():
+    if GOOGLE_SHEETS_CREDENTIALS:
+        try:
+            return json.loads(GOOGLE_SHEETS_CREDENTIALS)
+        except json.JSONDecodeError as e:
+            raise RuntimeError('Invalid JSON in GOOGLE_SHEETS_CREDENTIALS') from e
+
+    if GOOGLE_SHEETS_CREDENTIALS_FILE:
+        credentials_path = GOOGLE_SHEETS_CREDENTIALS_FILE
+        if not os.path.isabs(credentials_path):
+            credentials_path = os.path.join(os.getcwd(), credentials_path)
+        if not os.path.isfile(credentials_path):
+            raise FileNotFoundError(
+                f"Google Sheets credentials file not found: {credentials_path}. "
+                "Set GOOGLE_SHEETS_CREDENTIALS instead or upload the credentials file."
+            )
+        with open(credentials_path, 'r') as f:
+            return json.load(f)
+
+    raise RuntimeError(
+        'Missing Google Sheets credentials. Set either GOOGLE_SHEETS_CREDENTIALS or GOOGLE_SHEETS_CREDENTIALS_FILE.'
+    )
+
+creds_dict = load_google_sheets_credentials()
 creds = Credentials.from_service_account_info(creds_dict, scopes=['https://www.googleapis.com/auth/spreadsheets'])
 gc = gspread.authorize(creds)
 sheet = gc.open_by_key(GOOGLE_SHEETS_PRODUCTS_SHEET_ID).sheet1  # Assumes first sheet
