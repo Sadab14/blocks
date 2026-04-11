@@ -323,7 +323,7 @@
     {% if product['Stock'] > 0 %}
     <div class="product-card" data-category="{{ product['Category'] | lower }}" data-stock="{{ product['Stock'] }}" data-price="{{ product['Price'] }}" onclick="showPopup(this)">
       {% if product['Image'] %}
-      <img src="{{ url_for('static', filename='images/' + product['Image']) }}" class="product-image" alt="{{ product['Product'] }}" loading="lazy">
+      <img src="{{ product['Image'] or url_for('static', filename='images/placeholder.jpg') }}" class="product-image" alt="{{ product['Product'] }}" loading="lazy" onerror="this.src='/static/images/placeholder.jpg'" />
       {% else %}
       <img src="{{ url_for('static', filename='images/placeholder.jpg') }}" class="product-image" alt="Placeholder" loading="lazy">
       {% endif %}

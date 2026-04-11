@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Admin Login</title>
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/favicon.png') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            min-height: 100vh;
+            font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+            background: #eef2f8;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            padding: 1.5rem;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('{{ url_for("static", filename="images/blocks bg.jpg") }}') center/cover no-repeat;
+            filter: blur(5px);
+            z-index: -2;
+            opacity: 1;
+        }
+
+        body::after {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at 20% 30%, rgba(255,255,240,0.3), rgba(245,248,250,0.55));
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        .login-container {
+            background: rgba(255, 255, 255, 0.78);
+            backdrop-filter: blur(16px) saturate(180%);
+            -webkit-backdrop-filter: blur(16px);
+            border-radius: 2rem;
+            border: 1px solid rgba(255, 255, 255, 0.7);
+            box-shadow: 0 20px 35px -12px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.02), 0 0 0 1px rgba(255, 255, 255, 0.5) inset;
+            padding: 2.4rem 2rem 2.5rem;
+            width: 100%;
+            max-width: 440px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .login-container:hover {
+            background: rgba(255, 255, 255, 0.85);
+            box-shadow: 0 24px 44px -14px rgba(0, 0, 0, 0.12);
+            transform: translateY(-2px);
+        }
+
+        .brand-icon {
+            font-size: 2.6rem;
+            background: linear-gradient(135deg, #1e293b, #2c3e66);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            margin-bottom: 0.5rem;
+        }
+
+        h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            background: linear-gradient(135deg, #0f172a, #1f2a48);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            margin-bottom: 0.25rem;
+        }
+
+        .subhead {
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: #4b5565;
+            background: rgba(255, 255, 255, 0.65);
+            display: inline-block;
+            padding: 0.2rem 1rem;
+            border-radius: 40px;
+            backdrop-filter: blur(2px);
+            margin-bottom: 2rem;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 0.2rem;
+        }
+
+        .password-container {
+            position: relative;
+            width: 100%;
+            margin: 0.5rem 0 0.2rem;
+        }
+
+        input {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.9);
+            border: 1px solid rgba(148, 163, 184, 0.4);
+            border-radius: 1.5rem;
+            padding: 1rem 1.3rem;
+            font-size: 0.95rem;
+            font-weight: 500;
+            color: #0f172a;
+            font-family: 'Inter', monospace;
+            transition: all 0.2s ease;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #3b82f6;
+            background: #ffffff;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+        }
+
+        input::placeholder {
+            color: #7c8ba0;
+            font-weight: 450;
+            font-size: 0.9rem;
+        }
+
+        .password-toggle {
+            position: absolute;
+            right: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(240, 245, 250, 0.8);
+            border: none;
+            color: #4a5b7a;
+            cursor: pointer;
+            font-size: 1.1rem;
+            padding: 0.4rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 999px;
+            transition: all 0.2s;
+            width: 34px;
+            height: 34px;
+            backdrop-filter: blur(2px);
+        }
+
+        .password-toggle:hover {
+            background: white;
+            color: #0f172a;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+        }
+
+        button[type="submit"] {
+            background: #ffffff;
+            border: 1px solid rgba(148, 163, 184, 0.4);
+            border-radius: 2.2rem;
+            padding: 0.9rem 1.2rem;
+            margin-top: 1.6rem;
+            font-weight: 700;
+            font-size: 0.95rem;
+            font-family: 'Inter', sans-serif;
+            color: #1e293b;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.02);
+            letter-spacing: 0.2px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.6rem;
+        }
+
+        button[type="submit"] i {
+            font-size: 0.9rem;
+            transition: transform 0.2s;
+        }
+
+        button[type="submit"]:hover {
+            background: #f8fafc;
+            border-color: #94a3b8;
+            transform: scale(1.01);
+            box-shadow: 0 12px 20px -12px rgba(0, 0, 0, 0.12);
+            color: #0f172a;
+        }
+
+        button[type="submit"]:hover i {
+            transform: translateX(4px);
+        }
+
+        .error {
+            margin-top: 1.4rem;
+            background: rgba(255, 245, 245, 0.92);
+            backdrop-filter: blur(12px);
+            border-radius: 2rem;
+            padding: 0.75rem 1rem;
+            font-size: 0.85rem;
+            font-weight: 550;
+            color: #b91c1c;
+            border: 1px solid rgba(220, 38, 38, 0.4);
+            letter-spacing: 0.2px;
+            width: 100%;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+            animation: fadeSlide 0.25s ease-out;
+        }
+
+        @keyframes fadeSlide {
+            from {
+                opacity: 0;
+                transform: translateY(-6px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .error i {
+            font-size: 0.85rem;
+            color: #dc2626;
+        }
+
+        .info-note {
+            margin-top: 1.8rem;
+            font-size: 0.7rem;
+            color: #5f6c84;
+            border-top: 1px solid rgba(100, 116, 139, 0.2);
+            padding-top: 1.2rem;
+            display: flex;
+            justify-content: center;
+            gap: 1.5rem;
+            font-weight: 500;
+        }
+
+        .info-note span {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(255, 255, 255, 0.5);
+            padding: 0.2rem 0.8rem;
+            border-radius: 40px;
+            backdrop-filter: blur(2px);
+        }
+
+        @media (max-width: 480px) {
+            .login-container {
+                padding: 1.8rem 1.4rem;
+            }
+            h1 {
+                font-size: 1.8rem;
+            }
+            input {
+                padding: 0.85rem 1.1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="brand-icon">
+            <i class="fas fa-shield-haltered"></i>
+        </div>
+        <h1>Admin Login</h1>
+        <div class="subhead">restricted area · secure entry</div>
+        
+        <form method="POST">
+            <div class="password-container">
+                <input type="password" id="password" name="password" placeholder="Enter password" autocomplete="off" required>
+                <button type="button" class="password-toggle" id="passwordToggle" aria-label="Toggle password visibility">
+                    <i class="fas fa-eye"></i>
+                </button>
+            </div>
+            <button type="submit">
+                <span>Login</span>
+                <i class="fas fa-arrow-right"></i>
+            </button>
+        </form>
+
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                <div class="error">
+                    <i class="fas fa-circle-exclamation"></i>
+                    {% for message in messages %}
+                        {{ message }}
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+        
+        <div class="info-note">
+            <span><i class="fas fa-lock"></i> SSL Encrypted</span>
+            <span><i class="fas fa-key"></i> Admin only</span>
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            const passwordInput = document.getElementById('password');
+            const toggleButton = document.getElementById('passwordToggle');
+            
+            if (passwordInput && toggleButton) {
+                const iconElem = toggleButton.querySelector('i');
+                
+                toggleButton.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const isPassword = passwordInput.type === 'password';
+                    if (isPassword) {
+                        passwordInput.type = 'text';
+                        if (iconElem) iconElem.className = 'fas fa-eye-slash';
+                    } else {
+                        passwordInput.type = 'password';
+                        if (iconElem) iconElem.className = 'fas fa-eye';
+                    }
+                });
+            }
+        })();
+    </script>
+</body>
+</html>

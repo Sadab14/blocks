@@ -126,7 +126,7 @@
              data-stock="{{ product['Stock'] }}"
              onclick="addToInvoice(this)">
             {% if product['Image'] %}
-            <img src="{{ url_for('static', filename='images/' + product['Image']) }}" class="product-image" alt="{{ product['Product'] }}" loading="lazy">
+            <img src="{{ product['Image'] }}" class="product-image" alt="{{ product['Product'] }}" loading="lazy" onerror="this.src='/static/images/placeholder.jpg'">
             {% else %}
             <img src="{{ url_for('static', filename='images/placeholder.jpg') }}" class="product-image" alt="Placeholder">
             {% endif %}
